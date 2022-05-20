@@ -9,6 +9,8 @@ import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
 
+import "AnimatedSprite.lua"
+
 -- Declaring this "gfx" shorthand will make your life easier. Instead of having
 -- to preface all graphics calls with "playdate.graphics", just use "gfx."
 -- Performance will be slightly enhanced, too.
@@ -19,12 +21,35 @@ local gfx <const> = playdate.graphics
 -- Here's our player sprite declaration. We'll scope it to this file because
 -- several functions need to access it.
 
+local hourHandImageTable = gfx.imagetable.new("Images/HourHand")
+assert(hourHandImageTable)
+
 
 -- A function to set up our game environment.
 
 function myGameSetUp()
+	
+	for n=0,4,1 do
+		for i=0,7,1 do
+			hourHandSprite = AnimatedSprite.new(hourHandImageTable)
+			hourHandSprite:moveTo(25+(i*50),45+(n*50))
+			hourHandSprite:add()
+			hourHandSprite:addState("slow spin", 1, 8, {tickStep=2})
+			hourHandSprite:changeState("slow spin", true)
+		end
+	end
 
-
+	local backgroundImage = gfx.image.new( "Images/main-screen" )
+	assert( backgroundImage )
+	
+	gfx.sprite.setBackgroundDrawingCallback(
+		function( x, y, width, height )
+			gfx.setClipRect( x, y, width, height ) -- let's only draw the part of the screen that's dirty
+			backgroundImage:draw( 0, 0 )
+			gfx.clearClipRect() -- clear so we don't interfere with drawing that comes after this
+		end
+	)
+	
 
 end
 
