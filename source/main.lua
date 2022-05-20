@@ -34,7 +34,7 @@ function myGameSetUp()
 			hourHandSprite = AnimatedSprite.new(hourHandImageTable)
 			hourHandSprite:moveTo(25+(i*50),45+(n*50))
 			hourHandSprite:add()
-			hourHandSprite:addState("slow spin", 1, 8, {tickStep=2})
+			hourHandSprite:addState("slow spin", 1, 16, {tickStep=1.5})
 			hourHandSprite:changeState("slow spin", true)
 		end
 	end
