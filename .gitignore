@@ -1,0 +1,3 @@
+*.pdx
+.nova
+.DS_Store
