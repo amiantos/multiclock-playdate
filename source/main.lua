@@ -9,6 +9,10 @@ local gfx <const> = playdate.graphics
 
 local MilitaryTimeEnabled = false
 
+-- timers
+
+local mainTimer = nil
+
 -- patterns
 
 local numberPatterns = { 
@@ -155,15 +159,8 @@ function setTime()
 end
 
 function updateClock()
-	print("Clock updated")
 	setTime()
-	local timer = playdate.timer.performAfterDelay(3000, updateClock)
-end
-
-function startClock()
-	print("Start clock")
-	setTime()
-	local timer = playdate.timer.performAfterDelay(3000, updateClock)
+	mainTimer = playdate.timer.performAfterDelay(3000, updateClock)
 end
 
 -- setup
@@ -173,7 +170,6 @@ function myGameSetUp()
 	-- add menu options
 	local menu = playdate.getSystemMenu()
 	local checkmarkMenuItem, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
-		print("Checkmark menu item value changed to: ", value)
 		MilitaryTimeEnabled = value
 	end)
 	
@@ -224,7 +220,7 @@ function myGameSetUp()
 		end
 	)
 	
-	startClock()
+	updateClock()
 
 end
 
@@ -233,6 +229,16 @@ myGameSetUp()
 -- update
 
 function playdate.update()
+	
+	if playdate.buttonIsPressed( playdate.kButtonUp ) then
+		if mainTimer ~= nil then
+			mainTimer:pause()
+		end
+	elseif playdate.buttonIsPressed(playdate.kButtonDown) then
+		if mainTimer ~= nil then
+			mainTimer:start()
+		end
+	end
 	
 	for index, clock in ipairs(clocks) do
 		for key, hand in pairs(clock) do
