@@ -24,18 +24,31 @@ local gfx <const> = playdate.graphics
 local hourHandImageTable = gfx.imagetable.new("Images/HourHand")
 assert(hourHandImageTable)
 
+local hourHands = {}
+local minuteHands = {}
 
 -- A function to set up our game environment.
 
 function myGameSetUp()
 	
-	for n=0,4,1 do
+	for n=0,3,1 do
 		for i=0,7,1 do
-			hourHandSprite = AnimatedSprite.new(hourHandImageTable)
-			hourHandSprite:moveTo(25+(i*50),45+(n*50))
+			-- create hour hands
+			current_frame = math.random(1,16)
+			hourHandSprite = gfx.sprite.new(hourHandImageTable:getImage(current_frame))
+			hourHandSprite.tick = 0
+			hourHandSprite.current_frame = current_frame
+			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 			hourHandSprite:add()
-			hourHandSprite:addState("slow spin", 1, 16, {tickStep=1.5})
-			hourHandSprite:changeState("slow spin", true)
+			table.insert(hourHands, hourHandSprite)
+			-- create minute hands
+			current_frame = math.random(1,16)
+			minuteHandSprite = gfx.sprite.new(hourHandImageTable:getImage(current_frame))
+			minuteHandSprite.tick = 0
+			minuteHandSprite.current_frame = current_frame
+			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
+			minuteHandSprite:add()
+			table.insert(minuteHands, minuteHandSprite)
 		end
 	end
 
@@ -65,7 +78,27 @@ myGameSetUp()
 
 function playdate.update()
 
+	for index, hand in ipairs(hourHands) do
+		hand.tick += 1
+		if hand.tick % 3 == 0 then
+			hand.current_frame += 1
+			if hand.current_frame > 16 then
+				hand.current_frame = 1
+			end
+			hand:setImage(hourHandImageTable:getImage(hand.current_frame))
+		end
+	end
 	
+	for index, hand in ipairs(minuteHands) do
+		hand.tick += 1
+		if hand.tick % 3 == 0 then
+			hand.current_frame += 1
+			if hand.current_frame > 16 then
+				hand.current_frame = 1
+			end
+			hand:setImage(hourHandImageTable:getImage(hand.current_frame))
+		end
+	end
 	
 	gfx.sprite.update()
 	playdate.timer.updateTimers()
