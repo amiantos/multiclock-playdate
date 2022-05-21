@@ -170,6 +170,13 @@ end
 
 function myGameSetUp()
 	
+	-- add menu options
+	local menu = playdate.getSystemMenu()
+	local checkmarkMenuItem, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
+		print("Checkmark menu item value changed to: ", value)
+		MilitaryTimeEnabled = value
+	end)
+	
 	-- create clocks
 	for n=0,2,1 do
 		for i=0,7,1 do
