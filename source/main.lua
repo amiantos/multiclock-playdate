@@ -1,23 +1,15 @@
-
--- Name this file `main.lua`. Your game can use multiple source files if you wish
--- (use the `import "myFilename"` command), but the simplest games can be written
--- with just `main.lua`.
-
--- You'll want to import these in just about every project you'll work on.
-
 import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
 
-import "AnimatedSprite.lua"
-
--- Declaring this "gfx" shorthand will make your life easier. Instead of having
--- to preface all graphics calls with "playdate.graphics", just use "gfx."
--- Performance will be slightly enhanced, too.
--- NOTE: Because it's local, you'll have to do it in every .lua source file.
-
 local gfx <const> = playdate.graphics
+
+-- settings
+
+local MilitaryTimeEnabled = false
+
+-- patterns
 
 local numberPatterns = { 
 	[0] = {
@@ -103,8 +95,7 @@ local numberPatterns = {
 	
 }
 
--- Here's our player sprite declaration. We'll scope it to this file because
--- several functions need to access it.
+-- objects
 
 local hourHandImageTable = gfx.imagetable.new("Images/HourHand")
 assert(hourHandImageTable)
@@ -124,20 +115,21 @@ local degreesToFrames = {
 	[315] = 15,
 }
 
--- set time function
+-- functions
 
 function setTime()
 	local current_time = playdate.getTime()
 	local string_hour = tostring(current_time.hour)
-	if string_hour.len == 1 then
+	if MilitaryTimeEnabled == false and current_time.hour > 12 then
+		string_hour = tostring(current_time.hour - 12)
+	end
+	if #string_hour == 1 then
 		string_hour = "0" .. string_hour
 	end
 	local string_minute = tostring(current_time.minute)
-	if string_minute.len == 1 then
+	if #string_minute == 1 then
 		string_minute = "0" .. string_minute
 	end
-	
-	print(string_hour .. string_minute)
 
 	local hour_first = tonumber(string.sub(string_hour, 1, 1))
 	local hour_second = tonumber(string.sub(string_hour, 2, 2))
@@ -162,7 +154,19 @@ function setTime()
 	end
 end
 
--- A function to set up our game environment.
+function updateClock()
+	print("Clock updated")
+	setTime()
+	local timer = playdate.timer.performAfterDelay(3000, updateClock)
+end
+
+function startClock()
+	print("Start clock")
+	setTime()
+	local timer = playdate.timer.performAfterDelay(3000, updateClock)
+end
+
+-- setup
 
 function myGameSetUp()
 	
@@ -213,25 +217,15 @@ function myGameSetUp()
 		end
 	)
 	
-	-- create timer
+	startClock()
 
 end
 
--- Now we'll call the function above to configure our game.
--- After this runs (it just runs once), nearly everything will be
--- controlled by the OS calling `playdate.update()` 30 times a second.
-
 myGameSetUp()
 
--- `playdate.update()` is the heart of every Playdate game.
--- This function is called right before every frame is drawn onscreen.
--- Use this function to poll input, run game logic, and move sprites.
+-- update
 
 function playdate.update()
-	
-	if playdate.buttonIsPressed( playdate.kButtonUp ) then
-		setTime()
-	end
 	
 	for index, clock in ipairs(clocks) do
 		for key, hand in pairs(clock) do
@@ -244,6 +238,9 @@ function playdate.update()
 					end
 					hand:setImage(hourHandImageTable:getImage(hand.current_frame))
 				end
+			end
+			if hand.tick >= 300 then
+				hand.tick = 0
 			end
 		end
 	end
