@@ -1,3 +1,4 @@
+
 -- Name this file `main.lua`. Your game can use multiple source files if you wish
 -- (use the `import "myFilename"` command), but the simplest games can be written
 -- with just `main.lua`.
@@ -108,33 +109,98 @@ local numberPatterns = {
 local hourHandImageTable = gfx.imagetable.new("Images/HourHand")
 assert(hourHandImageTable)
 
-local hourHands = {}
-local minuteHands = {}
+local clocks = {}
+
+local groups = {{},{},{},{}}
+
+local degreesToFrames = {
+	[0] = 1,
+	[45] = 3,
+	[90] = 5,
+	[135] = 7,
+	[180] = 9,
+	[225] = 11,
+	[270] = 13,
+	[315] = 15,
+}
+
+-- set time function
+
+function setTime()
+	local current_time = playdate.getTime()
+	local string_hour = tostring(current_time.hour)
+	if string_hour.len == 1 then
+		string_hour = "0" .. string_hour
+	end
+	local string_minute = tostring(current_time.minute)
+	if string_minute.len == 1 then
+		string_minute = "0" .. string_minute
+	end
+	
+	print(string_hour .. string_minute)
+
+	local hour_first = tonumber(string.sub(string_hour, 1, 1))
+	local hour_second = tonumber(string.sub(string_hour, 2, 2))
+	local minute_first = tonumber(string.sub(string_minute, 1, 1))
+	local minute_second = tonumber(string.sub(string_minute, 2, 2))
+	
+	local hour_first_pattern = numberPatterns[hour_first]
+	local hour_second_pattern = numberPatterns[hour_second]
+	local minute_first_pattern = numberPatterns[minute_first]
+	local minute_second_pattern = numberPatterns[minute_second]
+	
+	for index, pattern in ipairs({
+		hour_first_pattern, hour_second_pattern, minute_first_pattern, minute_second_pattern
+	}) do
+		local clock_group = groups[index]
+		for i=1,6,1 do
+			local positions = pattern[i]
+			local clock = clock_group[i]
+			clock.hourHands.destination_frame = degreesToFrames[positions[1]]
+			clock.minuteHands.destination_frame = degreesToFrames[positions[2]]
+		end
+	end
+end
 
 -- A function to set up our game environment.
 
 function myGameSetUp()
 	
-	for n=0,3,1 do
+	-- create clocks
+	for n=0,2,1 do
 		for i=0,7,1 do
 			-- create hour hands
-			current_frame = math.random(1,16)
-			hourHandSprite = gfx.sprite.new(hourHandImageTable:getImage(current_frame))
+			hourHandSprite = gfx.sprite.new(hourHandImageTable:getImage(1))
 			hourHandSprite.tick = 0
-			hourHandSprite.current_frame = current_frame
+			hourHandSprite.current_frame = 1
+			hourHandSprite.destination_frame = 1
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 			hourHandSprite:add()
-			table.insert(hourHands, hourHandSprite)
 			-- create minute hands
-			current_frame = math.random(1,16)
-			minuteHandSprite = gfx.sprite.new(hourHandImageTable:getImage(current_frame))
+			minuteHandSprite = gfx.sprite.new(hourHandImageTable:getImage(1))
 			minuteHandSprite.tick = 0
-			minuteHandSprite.current_frame = current_frame
+			minuteHandSprite.current_frame = 1
+			minuteHandSprite.destination_frame = 1
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
 			minuteHandSprite:add()
-			table.insert(minuteHands, minuteHandSprite)
+			
+			local clock = {hourHands=hourHandSprite, minuteHands=minuteHandSprite}
+			table.insert(clocks, clock)
+			
+			if i == 0 or i == 1 then
+				table.insert(groups[1], clock)
+			elseif i == 2 or i == 3 then
+				table.insert(groups[2], clock)
+			elseif i == 4 or i == 5 then
+				table.insert(groups[3], clock)
+			elseif i == 6 or i == 7 then
+				table.insert(groups[4], clock)
+			end
+			
 		end
 	end
+	
+	-- set background
 
 	local backgroundImage = gfx.image.new( "Images/main-screen" )
 	assert( backgroundImage )
@@ -147,6 +213,7 @@ function myGameSetUp()
 		end
 	)
 	
+	-- create timer
 
 end
 
@@ -161,29 +228,26 @@ myGameSetUp()
 -- Use this function to poll input, run game logic, and move sprites.
 
 function playdate.update()
+	
+	if playdate.buttonIsPressed( playdate.kButtonUp ) then
+		setTime()
+	end
+	
+	for index, clock in ipairs(clocks) do
+		for key, hand in pairs(clock) do
+			hand.tick += 1
+			if hand.tick % 3 == 0 then
+				if hand.current_frame ~= hand.destination_frame then
+					hand.current_frame += 1
+					if hand.current_frame > 16 then
+						hand.current_frame = 1
+					end
+					hand:setImage(hourHandImageTable:getImage(hand.current_frame))
+				end
+			end
+		end
+	end
 
-	for index, hand in ipairs(hourHands) do
-		hand.tick += 1
-		if hand.tick % 3 == 0 then
-			hand.current_frame += 1
-			if hand.current_frame > 16 then
-				hand.current_frame = 1
-			end
-			hand:setImage(hourHandImageTable:getImage(hand.current_frame))
-		end
-	end
-	
-	for index, hand in ipairs(minuteHands) do
-		hand.tick += 1
-		if hand.tick % 3 == 0 then
-			hand.current_frame += 1
-			if hand.current_frame > 16 then
-				hand.current_frame = 1
-			end
-			hand:setImage(hourHandImageTable:getImage(hand.current_frame))
-		end
-	end
-	
 	gfx.sprite.update()
 	playdate.timer.updateTimers()
 
