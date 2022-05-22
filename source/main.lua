@@ -112,19 +112,20 @@ local groups = {{},{},{},{}}
 
 local degreesToFrames = {
 	[0] = 1,
-	[45] = 3,
-	[90] = 5,
-	[135] = 7,
-	[180] = 9,
-	[225] = 11,
-	[270] = 13,
-	[315] = 15,
+	[45] = 5,
+	[90] = 9,
+	[135] = 13,
+	[180] = 17,
+	[225] = 21,
+	[270] = 25,
+	[315] = 29,
 }
 
 -- functions
 
 function setTime()
 	local current_time = playdate.getTime()
+	
 	local string_hour = tostring(current_time.hour)
 	if MilitaryTimeEnabled == false and current_time.hour > 12 then
 		string_hour = tostring(current_time.hour - 12)
@@ -132,23 +133,27 @@ function setTime()
 	if #string_hour == 1 then
 		string_hour = "0" .. string_hour
 	end
+	
 	local string_minute = tostring(current_time.minute)
 	if #string_minute == 1 then
 		string_minute = "0" .. string_minute
 	end
 
-	local hour_first = tonumber(string.sub(string_hour, 1, 1))
-	local hour_second = tonumber(string.sub(string_hour, 2, 2))
-	local minute_first = tonumber(string.sub(string_minute, 1, 1))
-	local minute_second = tonumber(string.sub(string_minute, 2, 2))
+	local hour_first_digit = tonumber(string.sub(string_hour, 1, 1))
+	local hour_second_digit = tonumber(string.sub(string_hour, 2, 2))
+	local minute_first_digit = tonumber(string.sub(string_minute, 1, 1))
+	local minute_second_digit = tonumber(string.sub(string_minute, 2, 2))
 	
-	local hour_first_pattern = numberPatterns[hour_first]
-	local hour_second_pattern = numberPatterns[hour_second]
-	local minute_first_pattern = numberPatterns[minute_first]
-	local minute_second_pattern = numberPatterns[minute_second]
+	local hour_first_digit_pattern = numberPatterns[hour_first_digit]
+	local hour_second_digit_pattern = numberPatterns[hour_second_digit]
+	local minute_first_digit_pattern = numberPatterns[minute_first_digit]
+	local minute_second_digit_pattern = numberPatterns[minute_second_digit]
 	
 	for index, pattern in ipairs({
-		hour_first_pattern, hour_second_pattern, minute_first_pattern, minute_second_pattern
+		hour_first_digit_pattern, 
+		hour_second_digit_pattern, 
+		minute_first_digit_pattern, 
+		minute_second_digit_pattern
 	}) do
 		local clock_group = groups[index]
 		for i=1,6,1 do
@@ -249,7 +254,7 @@ function playdate.update()
 			if hand.tick % 3 == 0 then
 				if hand.current_frame ~= hand.destination_frame then
 					hand.current_frame += 1
-					if hand.current_frame > 16 then
+					if hand.current_frame > 32 then
 						hand.current_frame = 1
 					end
 					if key == "hourHands" then
