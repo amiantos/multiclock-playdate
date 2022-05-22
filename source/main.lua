@@ -101,8 +101,10 @@ local numberPatterns = {
 
 -- objects
 
-local hourHandImageTable = gfx.imagetable.new("Images/HourHand")
+local hourHandImageTable = gfx.imagetable.new("Images/hourHands")
 assert(hourHandImageTable)
+local minuteHandImageTable = gfx.imagetable.new("Images/minuteHands")
+assert(minuteHandImageTable)
 
 local clocks = {}
 
@@ -184,7 +186,7 @@ function myGameSetUp()
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 			hourHandSprite:add()
 			-- create minute hands
-			minuteHandSprite = gfx.sprite.new(hourHandImageTable:getImage(1))
+			minuteHandSprite = gfx.sprite.new(minuteHandImageTable:getImage(1))
 			minuteHandSprite.tick = 0
 			minuteHandSprite.current_frame = 1
 			minuteHandSprite.destination_frame = 1
@@ -240,6 +242,7 @@ function playdate.update()
 		end
 	end
 	
+	-- progress clocks as needed
 	for index, clock in ipairs(clocks) do
 		for key, hand in pairs(clock) do
 			hand.tick += 1
@@ -249,7 +252,11 @@ function playdate.update()
 					if hand.current_frame > 16 then
 						hand.current_frame = 1
 					end
-					hand:setImage(hourHandImageTable:getImage(hand.current_frame))
+					if key == "hourHands" then
+						hand:setImage(hourHandImageTable:getImage(hand.current_frame))
+					elseif key == "minuteHands" then
+						hand:setImage(minuteHandImageTable:getImage(hand.current_frame))
+					end
 				end
 			end
 			if hand.tick >= 300 then
