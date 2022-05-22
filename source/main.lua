@@ -126,29 +126,37 @@ local degreesToFrames = {
 function setTime()
 	local current_time = playdate.getTime()
 	
+	-- get hour
 	local string_hour = tostring(current_time.hour)
 	if MilitaryTimeEnabled == false and current_time.hour > 12 then
 		string_hour = tostring(current_time.hour - 12)
+	end
+	if MilitaryTimeEnabled == false and current_time.hour == 0 then
+		string_hour = "12"
 	end
 	if #string_hour == 1 then
 		string_hour = "0" .. string_hour
 	end
 	
+	-- get minute
 	local string_minute = tostring(current_time.minute)
 	if #string_minute == 1 then
 		string_minute = "0" .. string_minute
 	end
 
+	-- split out digits
 	local hour_first_digit = tonumber(string.sub(string_hour, 1, 1))
 	local hour_second_digit = tonumber(string.sub(string_hour, 2, 2))
 	local minute_first_digit = tonumber(string.sub(string_minute, 1, 1))
 	local minute_second_digit = tonumber(string.sub(string_minute, 2, 2))
 	
+	-- get pattern for each digit
 	local hour_first_digit_pattern = numberPatterns[hour_first_digit]
 	local hour_second_digit_pattern = numberPatterns[hour_second_digit]
 	local minute_first_digit_pattern = numberPatterns[minute_first_digit]
 	local minute_second_digit_pattern = numberPatterns[minute_second_digit]
 	
+	-- apply patterns
 	for index, pattern in ipairs({
 		hour_first_digit_pattern, 
 		hour_second_digit_pattern, 
