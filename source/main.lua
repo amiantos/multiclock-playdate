@@ -128,12 +128,14 @@ function setTime()
 	
 	-- get hour
 	local string_hour = tostring(current_time.hour)
-	if MilitaryTimeEnabled == false and current_time.hour > 12 then
-		string_hour = tostring(current_time.hour - 12)
+	if MilitaryTimeEnabled == false then
+		if current_time.hour > 12 then
+			string_hour = tostring(current_time.hour - 12)
+		elseif current_time.hour == 0 then
+			string_hour = "12"
+		end
 	end
-	if MilitaryTimeEnabled == false and current_time.hour == 0 then
-		string_hour = "12"
-	end
+
 	if #string_hour == 1 then
 		string_hour = "0" .. string_hour
 	end
