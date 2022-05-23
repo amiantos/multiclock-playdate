@@ -199,11 +199,11 @@ function myGameSetUp()
 	for n=0,2,1 do
 		for i=0,7,1 do
 			-- create hour hands
-			hourHandSprite = ClockHand.new(hourHandImageTable)
+			local hourHandSprite = ClockHand.new(hourHandImageTable)
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			-- create minute hands
-			minuteHandSprite = ClockHand.new(minuteHandImageTable)
+			local minuteHandSprite = ClockHand.new(minuteHandImageTable)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			local clock = Clock.new(hourHandSprite, minuteHandSprite)
