@@ -4,7 +4,8 @@ import "CoreLibs/sprites"
 import "CoreLibs/timer"
 import "CoreLibs/crank"
 
-import "ClockHand.lua"
+import "objects/Clock.lua"
+import "objects/ClockHand.lua"
 
 local gfx <const> = playdate.graphics
 
@@ -173,8 +174,8 @@ function setTime()
 		for i=1,6,1 do
 			local positions = pattern[i]
 			local clock = clock_group[i]
-			clock.hourHands:addDestination(degreesToFrames[positions[1]])
-			clock.minuteHands:addDestination(degreesToFrames[positions[2]])
+			clock.hourClockHand:addDestination(degreesToFrames[positions[1]])
+			clock.minuteClockHand:addDestination(degreesToFrames[positions[2]])
 		end
 	end
 end
@@ -205,7 +206,7 @@ function myGameSetUp()
 			minuteHandSprite = ClockHand.new(minuteHandImageTable)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
 
-			local clock = {hourHands=hourHandSprite, minuteHands=minuteHandSprite}
+			local clock = Clock.new(hourHandSprite, minuteHandSprite)
 			table.insert(clocks, clock)
 
 			if i == 0 or i == 1 then
@@ -247,22 +248,22 @@ function playdate.update()
 	if not playdate.isCrankDocked() then
 		local ticks = playdate.getCrankTicks(32)
 		if  ticks ~= 0 then
-			for index, clockSprite in ipairs(clocks) do
-				clockSprite.hourHands:advance(ticks)
-				clockSprite.minuteHands:advance(ticks)
+			for index, clock in ipairs(clocks) do
+				clock.hourClockHand:advance(ticks)
+				clock.minuteClockHand:advance(ticks)
 			end
 		end
 	end
 
 	if playdate.buttonJustPressed( playdate.kButtonUp ) then
-		for index, clockSprite in ipairs(clocks) do
-			clockSprite.hourHands:addDestination(math.random(1, 32))
-			clockSprite.minuteHands:addDestination(math.random(1, 32))
+		for index, clock in ipairs(clocks) do
+			clock.hourClockHand:addDestination(math.random(1, 32))
+			clock.minuteClockHand:addDestination(math.random(1, 32))
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
-		for index, clockSprite in ipairs(clocks) do
-			clockSprite.hourHands:advance(1)
-			clockSprite.minuteHands:advance(1)
+		for index, clock in ipairs(clocks) do
+			clock.hourClockHand:advance(1)
+			clock.minuteClockHand:advance(1)
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
 		setTime()
