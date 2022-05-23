@@ -2,6 +2,9 @@ import "CoreLibs/object"
 import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
+import "CoreLibs/crank"
+
+import "ClockHand.lua"
 
 local gfx <const> = playdate.graphics
 
@@ -127,15 +130,16 @@ function setTime()
 	local current_time = playdate.getTime()
 	
 	-- get hour
-	local string_hour = tostring(current_time.hour)
+	local current_hour = current_time.hour
 	if MilitaryTimeEnabled == false then
-		if current_time.hour > 12 then
-			string_hour = tostring(current_time.hour - 12)
-		elseif current_time.hour == 0 then
-			string_hour = "12"
+		if current_hour > 12 then
+			current_hour = current_hour - 12
+		elseif current_hour == 0 then
+			current_hour = 12
 		end
 	end
 
+	local string_hour = tostring(current_hour)
 	if #string_hour == 1 then
 		string_hour = "0" .. string_hour
 	end
@@ -169,8 +173,8 @@ function setTime()
 		for i=1,6,1 do
 			local positions = pattern[i]
 			local clock = clock_group[i]
-			clock.hourHands.destination_frame = degreesToFrames[positions[1]]
-			clock.minuteHands.destination_frame = degreesToFrames[positions[2]]
+			clock.hourHands:addDestination(degreesToFrames[positions[1]])
+			clock.minuteHands:addDestination(degreesToFrames[positions[2]])
 		end
 	end
 end
@@ -194,19 +198,12 @@ function myGameSetUp()
 	for n=0,2,1 do
 		for i=0,7,1 do
 			-- create hour hands
-			hourHandSprite = gfx.sprite.new(hourHandImageTable:getImage(1))
-			hourHandSprite.tick = 0
-			hourHandSprite.current_frame = 1
-			hourHandSprite.destination_frame = 1
+			hourHandSprite = ClockHand.new(hourHandImageTable)
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
-			hourHandSprite:add()
+
 			-- create minute hands
-			minuteHandSprite = gfx.sprite.new(minuteHandImageTable:getImage(1))
-			minuteHandSprite.tick = 0
-			minuteHandSprite.current_frame = 1
-			minuteHandSprite.destination_frame = 1
+			minuteHandSprite = ClockHand.new(minuteHandImageTable)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
-			minuteHandSprite:add()
 			
 			local clock = {hourHands=hourHandSprite, minuteHands=minuteHandSprite}
 			table.insert(clocks, clock)
@@ -237,7 +234,7 @@ function myGameSetUp()
 		end
 	)
 	
-	updateClock()
+	-- updateClock()
 
 end
 
@@ -247,37 +244,29 @@ myGameSetUp()
 
 function playdate.update()
 	
-	if playdate.buttonIsPressed( playdate.kButtonUp ) then
-		if mainTimer ~= nil then
-			mainTimer:pause()
-		end
-	elseif playdate.buttonIsPressed(playdate.kButtonDown) then
-		if mainTimer ~= nil then
-			mainTimer:start()
+	if not playdate.isCrankDocked() then
+		local ticks = playdate.getCrankTicks(32)
+		if  ticks ~= 0 then
+			print("cranked! " .. ticks)
+			for index, clockSprite in ipairs(clocks) do
+				clockSprite.hourHands:advance(ticks)
+				clockSprite.minuteHands:advance(ticks)
+			end
 		end
 	end
 	
-	-- progress clocks as needed
-	for index, clock in ipairs(clocks) do
-		for key, hand in pairs(clock) do
-			hand.tick += 1
-			if hand.tick % 3 == 0 then
-				if hand.current_frame ~= hand.destination_frame then
-					hand.current_frame += 1
-					if hand.current_frame > 32 then
-						hand.current_frame = 1
-					end
-					if key == "hourHands" then
-						hand:setImage(hourHandImageTable:getImage(hand.current_frame))
-					elseif key == "minuteHands" then
-						hand:setImage(minuteHandImageTable:getImage(hand.current_frame))
-					end
-				end
-			end
-			if hand.tick >= 300 then
-				hand.tick = 0
-			end
+	if playdate.buttonJustPressed( playdate.kButtonUp ) then
+		for index, clockSprite in ipairs(clocks) do
+			clockSprite.hourHands:addDestination(math.random(1, 32))
+			clockSprite.minuteHands:addDestination(math.random(1, 32))
 		end
+	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
+		for index, clockSprite in ipairs(clocks) do
+			clockSprite.hourHands:advance(1)
+			clockSprite.minuteHands:advance(1)
+		end
+	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
+		setTime()
 	end
 
 	gfx.sprite.update()
