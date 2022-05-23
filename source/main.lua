@@ -114,17 +114,6 @@ local clocks = {}
 
 local groups = {{},{},{},{}}
 
-local degreesToFrames = {
-	[0] = 1,
-	[45] = 5,
-	[90] = 9,
-	[135] = 13,
-	[180] = 17,
-	[225] = 21,
-	[270] = 25,
-	[315] = 29,
-}
-
 -- functions
 
 function setTime()
@@ -174,7 +163,7 @@ function setTime()
 		for i=1,6,1 do
 			local positions = pattern[i]
 			local clock = clock_group[i]
-			clock:addDestinationFrames(degreesToFrames[positions[1]], degreesToFrames[positions[2]])
+			clock:addDestinations(positions[1], positions[2])
 		end
 	end
 end
@@ -248,18 +237,18 @@ function playdate.update()
 		local ticks = playdate.getCrankTicks(32)
 		if  ticks ~= 0 then
 			for index, clock in ipairs(clocks) do
-				clock:advance(ticks)
+				clock:advanceFrames(ticks)
 			end
 		end
 	end
 
 	if playdate.buttonJustPressed( playdate.kButtonUp ) then
 		for index, clock in ipairs(clocks) do
-			clock:addDestinationFrames(math.random(1, 32), math.random(1, 32))
+			clock:addDestinations(math.random(0, 359), math.random(0, 359))
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
 		for index, clock in ipairs(clocks) do
-			clock:advance(1)
+			clock:advanceFrames(1)
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
 		setTime()

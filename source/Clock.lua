@@ -15,12 +15,12 @@ end
 
 -- move hands
 
-function Clock:advance(frames)
+function Clock:advanceFrames(frames)
 	self.hourClockHand:advance(frames)
 	self.minuteClockHand:advance(frames)
 end
 
-function Clock:addDestinationFrames(hourHandDestination, minuteHandDestination)
+function Clock:addDestinations(hourHandDestination, minuteHandDestination)
 	self.hourClockHand:addDestination(hourHandDestination)
 	self.minuteClockHand:addDestination(minuteHandDestination)
 end

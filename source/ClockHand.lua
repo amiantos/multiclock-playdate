@@ -28,7 +28,17 @@ end
 
 -- animating
 
-function ClockHand:addDestination(destination_frame)
+function ClockHand:convertDegreesToFrames(degrees)
+	local conversion_ratio = 360 / #self.imagetable
+	local frames = math.floor(1 + degrees / conversion_ratio)
+	while frames > #self.imagetable do
+		frames -= #self.imagetable
+	end
+	return frames
+end
+
+function ClockHand:addDestination(destination_degrees)
+	local destination_frame = self:convertDegreesToFrames(destination_degrees)
 	table.insert(self.destination_frames, destination_frame)
 end
 
