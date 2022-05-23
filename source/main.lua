@@ -4,8 +4,8 @@ import "CoreLibs/sprites"
 import "CoreLibs/timer"
 import "CoreLibs/crank"
 
-import "objects/Clock.lua"
-import "objects/ClockHand.lua"
+import "Clock.lua"
+import "ClockHand.lua"
 
 local gfx <const> = playdate.graphics
 
