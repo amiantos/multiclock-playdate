@@ -1,0 +1,6 @@
+name=MultiClock
+author=Brad Root
+description=Clock differently.
+bundleID=net.amiantos.multiclock.playdate
+version=1.0
+buildNumber=666
