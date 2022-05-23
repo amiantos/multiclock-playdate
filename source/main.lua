@@ -174,8 +174,7 @@ function setTime()
 		for i=1,6,1 do
 			local positions = pattern[i]
 			local clock = clock_group[i]
-			clock.hourClockHand:addDestination(degreesToFrames[positions[1]])
-			clock.minuteClockHand:addDestination(degreesToFrames[positions[2]])
+			clock:addDestinationFrames(degreesToFrames[positions[1]], degreesToFrames[positions[2]])
 		end
 	end
 end
@@ -187,7 +186,7 @@ end
 
 -- setup
 
-function myGameSetUp()
+function setup()
 
 	-- add menu options
 	local menu = playdate.getSystemMenu()
@@ -235,11 +234,11 @@ function myGameSetUp()
 		end
 	)
 
-	-- updateClock()
+	updateClock()
 
 end
 
-myGameSetUp()
+setup()
 
 -- update
 
@@ -249,24 +248,23 @@ function playdate.update()
 		local ticks = playdate.getCrankTicks(32)
 		if  ticks ~= 0 then
 			for index, clock in ipairs(clocks) do
-				clock.hourClockHand:advance(ticks)
-				clock.minuteClockHand:advance(ticks)
+				clock:advance(ticks)
 			end
 		end
 	end
 
 	if playdate.buttonJustPressed( playdate.kButtonUp ) then
 		for index, clock in ipairs(clocks) do
-			clock.hourClockHand:addDestination(math.random(1, 32))
-			clock.minuteClockHand:addDestination(math.random(1, 32))
+			clock:addDestinationFrames(math.random(1, 32), math.random(1, 32))
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
 		for index, clock in ipairs(clocks) do
-			clock.hourClockHand:advance(1)
-			clock.minuteClockHand:advance(1)
+			clock:advance(1)
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
 		setTime()
+	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
+
 	end
 
 	gfx.sprite.update()
