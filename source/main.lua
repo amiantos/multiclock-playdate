@@ -18,7 +18,7 @@ local mainTimer = nil
 
 -- patterns
 
-local numberPatterns = { 
+local numberPatterns = {
 	[0] = {
 		{90, 180},
 		{270, 180},
@@ -99,7 +99,7 @@ local numberPatterns = {
 		{90, 90},
 		{270, 0}
 	}
-	
+
 }
 
 -- objects
@@ -128,7 +128,7 @@ local degreesToFrames = {
 
 function setTime()
 	local current_time = playdate.getTime()
-	
+
 	-- get hour
 	local current_hour = current_time.hour
 	if MilitaryTimeEnabled == false then
@@ -143,7 +143,7 @@ function setTime()
 	if #string_hour == 1 then
 		string_hour = "0" .. string_hour
 	end
-	
+
 	-- get minute
 	local string_minute = tostring(current_time.minute)
 	if #string_minute == 1 then
@@ -155,18 +155,18 @@ function setTime()
 	local hour_second_digit = tonumber(string.sub(string_hour, 2, 2))
 	local minute_first_digit = tonumber(string.sub(string_minute, 1, 1))
 	local minute_second_digit = tonumber(string.sub(string_minute, 2, 2))
-	
+
 	-- get pattern for each digit
 	local hour_first_digit_pattern = numberPatterns[hour_first_digit]
 	local hour_second_digit_pattern = numberPatterns[hour_second_digit]
 	local minute_first_digit_pattern = numberPatterns[minute_first_digit]
 	local minute_second_digit_pattern = numberPatterns[minute_second_digit]
-	
+
 	-- apply patterns
 	for index, pattern in ipairs({
-		hour_first_digit_pattern, 
-		hour_second_digit_pattern, 
-		minute_first_digit_pattern, 
+		hour_first_digit_pattern,
+		hour_second_digit_pattern,
+		minute_first_digit_pattern,
 		minute_second_digit_pattern
 	}) do
 		local clock_group = groups[index]
@@ -187,13 +187,13 @@ end
 -- setup
 
 function myGameSetUp()
-	
+
 	-- add menu options
 	local menu = playdate.getSystemMenu()
 	local checkmarkMenuItem, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
 		MilitaryTimeEnabled = value
 	end)
-	
+
 	-- create clocks
 	for n=0,2,1 do
 		for i=0,7,1 do
@@ -204,10 +204,10 @@ function myGameSetUp()
 			-- create minute hands
 			minuteHandSprite = ClockHand.new(minuteHandImageTable)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
-			
+
 			local clock = {hourHands=hourHandSprite, minuteHands=minuteHandSprite}
 			table.insert(clocks, clock)
-			
+
 			if i == 0 or i == 1 then
 				table.insert(groups[1], clock)
 			elseif i == 2 or i == 3 then
@@ -217,15 +217,15 @@ function myGameSetUp()
 			elseif i == 6 or i == 7 then
 				table.insert(groups[4], clock)
 			end
-			
+
 		end
 	end
-	
+
 	-- set background
 
 	local backgroundImage = gfx.image.new( "Images/main-screen" )
 	assert( backgroundImage )
-	
+
 	gfx.sprite.setBackgroundDrawingCallback(
 		function( x, y, width, height )
 			gfx.setClipRect( x, y, width, height ) -- let's only draw the part of the screen that's dirty
@@ -233,7 +233,7 @@ function myGameSetUp()
 			gfx.clearClipRect() -- clear so we don't interfere with drawing that comes after this
 		end
 	)
-	
+
 	-- updateClock()
 
 end
@@ -243,18 +243,17 @@ myGameSetUp()
 -- update
 
 function playdate.update()
-	
+
 	if not playdate.isCrankDocked() then
 		local ticks = playdate.getCrankTicks(32)
 		if  ticks ~= 0 then
-			print("cranked! " .. ticks)
 			for index, clockSprite in ipairs(clocks) do
 				clockSprite.hourHands:advance(ticks)
 				clockSprite.minuteHands:advance(ticks)
 			end
 		end
 	end
-	
+
 	if playdate.buttonJustPressed( playdate.kButtonUp ) then
 		for index, clockSprite in ipairs(clocks) do
 			clockSprite.hourHands:addDestination(math.random(1, 32))
