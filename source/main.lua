@@ -105,10 +105,12 @@ local numberPatterns = {
 
 -- objects
 
-local hourHandImageTable = gfx.imagetable.new("Images/hourHands")
-assert(hourHandImageTable)
-local minuteHandImageTable = gfx.imagetable.new("Images/minuteHands")
-assert(minuteHandImageTable)
+local defaultHourHandImageTable = gfx.imagetable.new("images/defaults/hourHands")
+assert(defaultHourHandImageTable)
+local defaultMinuteHandImageTable = gfx.imagetable.new("images/defaults/minuteHands")
+assert(defaultMinuteHandImageTable)
+local defaultFaceImage = gfx.image.new("images/defaults/face")
+assert(defaultFaceImage)
 
 local clocks = {}
 
@@ -186,15 +188,20 @@ function setup()
 	-- create clocks
 	for n=0,2,1 do
 		for i=0,7,1 do
+			-- create face
+			local faceSprite = gfx.sprite.new(defaultFaceImage)
+			faceSprite:add()
+			faceSprite:moveTo(25+(i*50),70+(n*50))
+
 			-- create hour hands
-			local hourHandSprite = ClockHand.new(hourHandImageTable)
+			local hourHandSprite = ClockHand.new(defaultHourHandImageTable)
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			-- create minute hands
-			local minuteHandSprite = ClockHand.new(minuteHandImageTable)
+			local minuteHandSprite = ClockHand.new(defaultMinuteHandImageTable)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
 
-			local clock = Clock.new(hourHandSprite, minuteHandSprite)
+			local clock = Clock.new(faceSprite, hourHandSprite, minuteHandSprite)
 			table.insert(clocks, clock)
 
 			if i == 0 or i == 1 then
@@ -212,7 +219,7 @@ function setup()
 
 	-- set background
 
-	local backgroundImage = gfx.image.new( "Images/main-screen" )
+	local backgroundImage = gfx.image.new( "Images/black-background" )
 	assert( backgroundImage )
 
 	gfx.sprite.setBackgroundDrawingCallback(
@@ -223,7 +230,7 @@ function setup()
 		end
 	)
 
-	updateClock()
+	-- updateClock()
 
 end
 
@@ -253,7 +260,9 @@ function playdate.update()
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
 		setTime()
 	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
-
+		for index, clock in ipairs(clocks) do
+			clock:addDestinations(0, 0)
+		end
 	end
 
 	gfx.sprite.update()
