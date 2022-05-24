@@ -241,7 +241,7 @@ setup()
 function playdate.update()
 
 	if not playdate.isCrankDocked() then
-		local ticks = playdate.getCrankTicks(32)
+		local ticks = playdate.getCrankTicks(#defaultHourHandImageTable)
 		if  ticks ~= 0 then
 			for index, clock in ipairs(clocks) do
 				clock:advanceFrames(ticks)

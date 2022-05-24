@@ -62,30 +62,28 @@ function ClockHand:update()
 
 	self.tick += 1
 	if #self.destination_frames > 0 then
-		if self.tick % 3 == 0 then
-			local destination_frame = self.destination_frames[1]
-			if self.current_frame ~= destination_frame then
-				if self.clockwise then
-					self.current_frame += 1
-				else
-					self.current_frame -= 1
-				end
-				if self.current_frame > #self.imagetable then
-					self.current_frame = 1
-				elseif self.current_frame < 1 then
-					self.current_frame = #self.imagetable
-				end
-				self:setImage(self.imagetable:getImage(self.current_frame))
+		local destination_frame = self.destination_frames[1]
+		if self.current_frame ~= destination_frame then
+			if self.clockwise then
+				self.current_frame += 1
+			else
+				self.current_frame -= 1
 			end
+			if self.current_frame > #self.imagetable then
+				self.current_frame = 1
+			elseif self.current_frame < 1 then
+				self.current_frame = #self.imagetable
+			end
+			self:setImage(self.imagetable:getImage(self.current_frame))
+		end
 
-			if self.current_frame == destination_frame then
-				table.remove(self.destination_frames, 1)
-			end
+		if self.current_frame == destination_frame then
+			table.remove(self.destination_frames, 1)
+		end
 
-			-- if we exhaust all destination frames, turn off reverse
-			if #self.destination_frames == 0 then
-				self.clockwise = true
-			end
+		-- if we exhaust all destination frames, turn off reverse
+		if #self.destination_frames == 0 then
+			self.clockwise = true
 		end
 	end
 
