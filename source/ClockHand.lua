@@ -5,14 +5,15 @@ local gfx <const> = playdate.graphics
 
 class("ClockHand").extends(gfx.sprite)
 
-function ClockHand.new(imagetable)
-	return ClockHand(imagetable)
+function ClockHand.new(imagetable, animationCallback)
+	return ClockHand(imagetable, animationCallback)
 end
 
-function ClockHand:init(imagetable)
+function ClockHand:init(imagetable, animationCallback)
 	ClockHand.super.init(self)
 
 	self.imagetable = imagetable
+	self.animationCallback = animationCallback
 
 	self.clockwise = true
 
@@ -84,6 +85,7 @@ function ClockHand:update()
 		-- if we exhaust all destination frames, turn off reverse
 		if #self.destination_frames == 0 then
 			self.clockwise = true
+			self.animationCallback()
 		end
 	end
 

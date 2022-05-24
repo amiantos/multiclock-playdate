@@ -103,6 +103,98 @@ local numberPatterns = {
 
 }
 
+local inwardPointPattern = {
+	[1] = {
+		{105, 105}, {115, 115},
+		{90, 90}, {90, 90},
+		{75, 75}, {65, 65},
+	},
+	[2] = {
+		{125, 125}, {150, 150},
+		{90, 90}, {90, 90},
+		{55, 55}, {30, 30},
+	},
+	[3] = {
+		{210, 210}, {235, 235},
+		{270, 270}, {270, 270},
+		{330, 330}, {305, 305},
+	},
+	[4] = {
+		{245, 245}, {255, 255},
+		{270, 270}, {270, 270},
+		{295, 295}, {285, 285},
+	},
+}
+
+local halfDownHalfUp = {
+	[1] = {
+		{180, 180}, {180, 180},
+		{180, 180}, {180, 180},
+		{180, 180}, {180, 180},
+	},
+	[2] = {
+		{180, 180}, {180, 180},
+		{180, 180}, {180, 180},
+		{180, 180}, {180, 180},
+	},
+	[3] = {
+		{0, 0}, {0, 0},
+		{0, 0}, {0, 0},
+		{0, 0}, {0, 0},
+	},
+	[4] = {
+		{0, 0}, {0, 0},
+		{0, 0}, {0, 0},
+		{0, 0}, {0, 0},
+	},
+}
+
+local horizontalLinesPattern = {
+	[1] = {
+		{90, 90}, {270, 90},
+		{90, 90}, {270, 90},
+		{90, 90}, {270, 90},
+	},
+	[2] = {
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+	},
+	[3] = {
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+	},
+	[4] = {
+		{270, 90}, {270, 270},
+		{270, 90}, {270, 270},
+		{270, 90}, {270, 270},
+	},
+}
+
+local boxPattern = {
+	[1] = {
+		{90, 180}, {270, 90},
+		{0, 180}, {90, 90},
+		{0, 90}, {270, 90},
+	},
+	[2] = {
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+	},
+	[3] = {
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+		{270, 90}, {270, 90},
+	},
+	[4] = {
+		{270, 90}, {270, 180},
+		{270, 270}, {0, 180},
+		{270, 90}, {0, 270},
+	},
+}
+
 -- objects
 
 local defaultHourHandImageTable = gfx.imagetable.new("images/defaults/hourHands")
@@ -155,12 +247,17 @@ function setTime()
 	local minute_second_digit_pattern = numberPatterns[minute_second_digit]
 
 	-- apply patterns
-	for index, pattern in ipairs({
+	displayPattern({
 		hour_first_digit_pattern,
 		hour_second_digit_pattern,
 		minute_first_digit_pattern,
 		minute_second_digit_pattern
-	}) do
+	})
+end
+
+function displayPattern(pattern)
+	-- apply patterns
+	for index, pattern in ipairs(pattern) do
 		local clock_group = groups[index]
 		for i=1,6,1 do
 			local positions = pattern[i]
@@ -170,9 +267,23 @@ function setTime()
 	end
 end
 
+-- lifecycle
+
 function updateClock()
 	setTime()
 	mainTimer = playdate.timer.performAfterDelay(3000, updateClock)
+end
+
+local animationsCompleted = 0
+local timeSinceLastAnimation = 0
+local isAnimating = false
+
+function animationComplete()
+	animationsCompleted += 1
+	if animationsCompleted == 48 then
+		print("All hands have stopped moving...")
+		animationsCompleted = 0
+	end
 end
 
 -- setup
@@ -194,11 +305,11 @@ function setup()
 			faceSprite:moveTo(25+(i*50),70+(n*50))
 
 			-- create hour hands
-			local hourHandSprite = ClockHand.new(defaultHourHandImageTable)
+			local hourHandSprite = ClockHand.new(defaultHourHandImageTable, animationComplete)
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			-- create minute hands
-			local minuteHandSprite = ClockHand.new(defaultMinuteHandImageTable)
+			local minuteHandSprite = ClockHand.new(defaultMinuteHandImageTable, animationComplete)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			local clock = Clock.new(faceSprite, hourHandSprite, minuteHandSprite)
@@ -258,11 +369,13 @@ function playdate.update()
 			clock:advanceFrames(1)
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
-		setTime()
+		displayPattern(inwardPointPattern)
 	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
 		for index, clock in ipairs(clocks) do
 			clock:addDestinations(0, 0)
 		end
+	elseif playdate.buttonJustPressed(playdate.kButtonA) then
+		setTime()
 	end
 
 	gfx.sprite.update()
