@@ -59,6 +59,7 @@ function ClockHand:addDestination(destination_degrees)
 end
 
 function ClockHand:advance(frames)
+	print("Not implemented")
 	-- TODO: Reimplement if needed?
 	-- if #self.destination_frames == 0 then
 	-- 	if frames < 0 then
