@@ -382,9 +382,7 @@ function playdate.update()
 			clock:addDestinations(math.random(0, 359), math.random(0, 359))
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
-		for index, clock in ipairs(clocks) do
-			clock:advanceFrames(1)
-		end
+		displayPattern(boxPattern)
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
 		displayPattern(inwardPointPattern)
 	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
@@ -394,7 +392,7 @@ function playdate.update()
 	elseif playdate.buttonJustPressed(playdate.kButtonA) then
 		setTime()
 	elseif playdate.buttonJustPressed(playdate.kButtonB) then
-		spinClocks(720)
+		spinClocks(90)
 	end
 
 	gfx.sprite.update()
