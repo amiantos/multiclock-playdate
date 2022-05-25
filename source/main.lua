@@ -208,7 +208,7 @@ local clocks = {}
 
 local groups = {{},{},{},{}}
 
--- functions
+-- animations
 
 function setTime()
 	local current_time = playdate.getTime()
@@ -270,8 +270,15 @@ end
 function spinClocks(degrees)
 	for i, clock in ipairs(clocks) do
 		for n, hand in ipairs({clock.hourClockHand, clock.minuteClockHand}) do
+			local move_degrees = degrees
+			while move_degrees >= 360 do
+				local next_degrees = hand:getNextDegrees()
+				move_degrees -= 180
+				next_degrees += 180
+				hand:addDestination(next_degrees)
+			end
 			local next_degrees = hand:getNextDegrees()
-			next_degrees += degrees
+			next_degrees += move_degrees
 			hand:addDestination(next_degrees)
 		end
 	end
@@ -387,7 +394,7 @@ function playdate.update()
 	elseif playdate.buttonJustPressed(playdate.kButtonA) then
 		setTime()
 	elseif playdate.buttonJustPressed(playdate.kButtonB) then
-		spinClocks(180)
+		spinClocks(720)
 	end
 
 	gfx.sprite.update()
