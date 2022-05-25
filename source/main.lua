@@ -267,6 +267,16 @@ function displayPattern(pattern)
 	end
 end
 
+function spinClocks(degrees)
+	for i, clock in ipairs(clocks) do
+		for n, hand in ipairs({clock.hourClockHand, clock.minuteClockHand}) do
+			local next_degrees = hand:getNextDegrees()
+			next_degrees += degrees
+			hand:addDestination(next_degrees)
+		end
+	end
+end
+
 -- lifecycle
 
 function updateClock()
@@ -376,6 +386,8 @@ function playdate.update()
 		end
 	elseif playdate.buttonJustPressed(playdate.kButtonA) then
 		setTime()
+	elseif playdate.buttonJustPressed(playdate.kButtonB) then
+		spinClocks(180)
 	end
 
 	gfx.sprite.update()
