@@ -198,12 +198,22 @@ local boxPattern = {
 
 -- objects
 
-local defaultHourHandImageTable = gfx.imagetable.new("images/defaults/hourHands")
-assert(defaultHourHandImageTable)
-local defaultMinuteHandImageTable = gfx.imagetable.new("images/defaults/minuteHands")
-assert(defaultMinuteHandImageTable)
-local defaultFaceImage = gfx.image.new("images/defaults/face")
-assert(defaultFaceImage)
+local themes = {
+	default = {
+		hourHand = gfx.imagetable.new("images/themes/default/hourHands"),
+		minuteHand = gfx.imagetable.new("images/themes/default/minuteHands"),
+		face = gfx.image.new("images/themes/default/face"),
+		background = gfx.image.new("images/black-background")
+	},
+	defaultReversed = {
+		hourHand = gfx.imagetable.new("images/themes/defaultReversed/hourHands"),
+		minuteHand = gfx.imagetable.new("images/themes/defaultReversed/minuteHands"),
+		face = gfx.image.new("images/themes/defaultReversed/face"),
+		background = gfx.image.new("images/white-background")
+	}
+}
+
+local current_theme = themes.defaultReversed
 
 local clocks = {}
 
@@ -339,16 +349,16 @@ function setup()
 	for n=0,2,1 do
 		for i=0,7,1 do
 			-- create face
-			local faceSprite = gfx.sprite.new(defaultFaceImage)
+			local faceSprite = gfx.sprite.new(current_theme.face)
 			faceSprite:add()
 			faceSprite:moveTo(25+(i*50),70+(n*50))
 
 			-- create hour hands
-			local hourHandSprite = ClockHand.new(defaultHourHandImageTable, animationComplete)
+			local hourHandSprite = ClockHand.new(current_theme.hourHand, animationComplete)
 			hourHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			-- create minute hands
-			local minuteHandSprite = ClockHand.new(defaultMinuteHandImageTable, animationComplete)
+			local minuteHandSprite = ClockHand.new(current_theme.minuteHand, animationComplete)
 			minuteHandSprite:moveTo(25+(i*50),70+(n*50))
 
 			local clock = Clock.new(faceSprite, hourHandSprite, minuteHandSprite)
@@ -369,13 +379,10 @@ function setup()
 
 	-- set background
 
-	local backgroundImage = gfx.image.new( "Images/black-background" )
-	assert( backgroundImage )
-
 	gfx.sprite.setBackgroundDrawingCallback(
 		function( x, y, width, height )
 			gfx.setClipRect( x, y, width, height ) -- let's only draw the part of the screen that's dirty
-			backgroundImage:draw( 0, 0 )
+			current_theme.background:draw( 0, 0 )
 			gfx.clearClipRect() -- clear so we don't interfere with drawing that comes after this
 		end
 	)
@@ -390,7 +397,7 @@ setup()
 
 
 local actionQueue = {
-	Action.animation({
+	Action.sequence({
 		{func=setTime}
 	})
 }
