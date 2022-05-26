@@ -1,17 +1,17 @@
 import 'CoreLibs/object'
 
-class("Animation").extends()
+class("Action").extends()
 
-function Animation.new(functions)
-	return Animation(functions)
+function Action.sequence(functions)
+	return Action(functions)
 end
 
-function Animation.wait(delay)
-	return Animation({}, delay)
+function Action.wait(delay)
+	return Action({}, delay)
 end
 
-function Animation:init(functions, delay)
-	Animation.super.init(self)
+function Action:init(functions, delay)
+	Action.super.init(self)
 
 	-- functions is array of functions to run
 	self.functions = functions
@@ -19,25 +19,25 @@ function Animation:init(functions, delay)
 	self.delay = (delay or 0) * 30
 	self.initial_delay = self.delay
 
-	self.fired = false
+	self.finished = false
 end
 
-function Animation:reset()
+function Action:reset()
 	-- reset animation so the objects can be reused
-	self.fired = false
+	self.finished = false
 	self.delay = self.initial_delay
 end
 
 
-function Animation:update()
-	if self.fired == false then
+function Action:update()
+	if self.finished == false then
 		if self.delay == 0 then
 			for index, func in ipairs(self.functions) do
 				if func.func then
 					func.func(func.attribute)
 				end
 			end
-			self.fired = true
+			self.finished = true
 		end
 		self.delay -= 1
 	end

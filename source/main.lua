@@ -6,7 +6,7 @@ import "CoreLibs/crank"
 
 import "Clock.lua"
 import "ClockHand.lua"
-import "Animation.lua"
+import "Action.lua"
 
 local gfx <const> = playdate.graphics
 
@@ -286,6 +286,25 @@ function spinClocks(degrees)
 	end
 end
 
+function displayRandomPattern()
+	displayPattern(createRandomPattern())
+end
+
+function createRandomPattern()
+	local pattern = {}
+	for n=1,4,1 do
+		group = {}
+		for i=1,6,1 do
+			group[i] = {
+				math.random(0, 359),
+				math.random(0,359)
+			}
+		end
+		pattern[n] = group
+	end
+	return pattern
+end
+
 -- lifecycle
 
 function updateClock()
@@ -370,72 +389,85 @@ setup()
 -- update
 
 
-local animationQueue = {
-	Animation.new({
+local actionQueue = {
+	Action.animation({
 		{func=setTime}
 	})
 }
 
-local animationCombinations = {
+local actionArrays = {
 	{
-		Animation.new({
+		Action.sequence({
 			{func=setTime},
 			{func=spinClocks, attribute=180}
 		}),
-		Animation.wait(5),
-		Animation.new({
+		Action.wait(5),
+		Action.sequence({
 			{func=setTime}
 		})
 	},
 	{
-		Animation.new({
+		Action.sequence({
 			{func=spinClocks, attribute=90},
 			{func=displayPattern, attribute=boxPattern},
 			{func=spinClocks, attribute=90}
 		}),
-		Animation.wait(5),
-		Animation.new({
+		Action.wait(5),
+		Action.sequence({
 			{func=displayPattern, attribute=boxPattern}
 		})
 
 	},
 	{
-		Animation.new({
+		Action.sequence({
 			{func=displayPattern, attribute=inwardPointPattern},
 		}),
-		Animation.wait(5),
-		Animation.new({
-			{func=spinClocks, attribute=360}
+		Action.wait(5),
+		Action.sequence({
+			{func=spinClocks, attribute=720}
 		}),
+		Action.sequence({
+			{func=displayPattern, attribute=halfDownHalfUp},
+		}),
+	},
+	{
+		Action.sequence({
+			{func=displayPattern, attribute=horizontalLinesPattern},
+		})
+	},
+	{
+		Action.sequence({
+			{func=displayRandomPattern},
+		})
 	}
 }
 
-local setTimeAnimationCombinations = {
-	{
-		{func=setTime},
-		{func=spinClocks, attribute=180}
-	}
-}
+-- local setTimeAnimationCombinations = {
+-- 	{
+-- 		{func=setTime},
+-- 		{func=spinClocks, attribute=180}
+-- 	}
+-- }
 
 function playdate.update()
 
-	if #animationQueue > 0 then
-		local currentAnimation = animationQueue[1]
-		currentAnimation:update()
-		if currentAnimation.fired == true then
-			table.remove(animationQueue, 1)
-			if #animationQueue == 0 then
-				print("All animations exhausted...")
+	if #actionQueue > 0 then
+		local currentAction = actionQueue[1]
+		currentAction:update()
+		if currentAction.finished == true then
+			table.remove(actionQueue, 1)
+			if #actionQueue == 0 then
+				print("All actions exhausted...")
 			end
 		end
 	else
 		ticksSinceLastAnimation += 1
 		if ticksSinceLastAnimation >= 150 then
-			print("Picking random animation...")
-			local randomAnimationCombination = animationCombinations[math.random(1, #animationCombinations)]
-			for i, anim in ipairs(randomAnimationCombination) do
-				anim:reset()
-				table.insert(animationQueue, anim)
+			print("Picking random action...")
+			local randomActionArray = actionArrays[math.random(1, #actionArrays)]
+			for i, action in ipairs(randomActionArray) do
+				action:reset()
+				table.insert(actionQueue, action)
 			end
 		end
 	end
