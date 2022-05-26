@@ -294,7 +294,7 @@ function updateClock()
 end
 
 local animationsCompleted = 0
-local timeSinceLastAnimation = 0
+local ticksSinceLastAnimation = 0
 local isAnimating = false
 
 function animationComplete()
@@ -302,6 +302,7 @@ function animationComplete()
 	if animationsCompleted == 48 then
 		print("All hands have stopped moving...")
 		animationsCompleted = 0
+		ticksSinceLastAnimation = 0
 	end
 end
 
@@ -371,18 +372,49 @@ setup()
 
 local animationQueue = {
 	Animation.new({
-		{func=spinClocks, attribute=180},
-		{func=displayPattern, attribute=boxPattern}
-	}),
-	Animation.wait(5),
-	Animation.new({
-		{func=setTime},
-		{func=spinClocks, attribute=180}
-	}),
-	Animation.wait(5),
-	Animation.new({
 		{func=setTime}
 	})
+}
+
+local animationCombinations = {
+	{
+		Animation.new({
+			{func=setTime},
+			{func=spinClocks, attribute=180}
+		}),
+		Animation.wait(5),
+		Animation.new({
+			{func=setTime}
+		})
+	},
+	{
+		Animation.new({
+			{func=spinClocks, attribute=90},
+			{func=displayPattern, attribute=boxPattern},
+			{func=spinClocks, attribute=90}
+		}),
+		Animation.wait(5),
+		Animation.new({
+			{func=displayPattern, attribute=boxPattern}
+		})
+
+	},
+	{
+		Animation.new({
+			{func=displayPattern, attribute=inwardPointPattern},
+		}),
+		Animation.wait(5),
+		Animation.new({
+			{func=spinClocks, attribute=360}
+		}),
+	}
+}
+
+local setTimeAnimationCombinations = {
+	{
+		{func=setTime},
+		{func=spinClocks, attribute=180}
+	}
 }
 
 function playdate.update()
@@ -392,6 +424,19 @@ function playdate.update()
 		currentAnimation:update()
 		if currentAnimation.fired == true then
 			table.remove(animationQueue, 1)
+			if #animationQueue == 0 then
+				print("All animations exhausted...")
+			end
+		end
+	else
+		ticksSinceLastAnimation += 1
+		if ticksSinceLastAnimation >= 150 then
+			print("Picking random animation...")
+			local randomAnimationCombination = animationCombinations[math.random(1, #animationCombinations)]
+			for i, anim in ipairs(randomAnimationCombination) do
+				anim:reset()
+				table.insert(animationQueue, anim)
+			end
 		end
 	end
 
