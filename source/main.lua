@@ -42,7 +42,7 @@ local themes = {
 
 local MilitaryTimeEnabled = false
 
-local current_theme = themes.defaultReversed
+local current_theme = themes.default
 
 -- core animation functions
 
@@ -172,11 +172,7 @@ end
 
 local actionQueue = {
 	Action.sequence({
-		{func=displayRandomPattern},
-	}),
-	Action.wait(5),
-	Action.sequence({
-		{func=spinWithDelay}
+		{func=displayTime},
 	})
 }
 
@@ -249,15 +245,15 @@ function playdate.update()
 			end
 		end
 	else
-		-- ticksSinceLastAnimation += 1
-		-- if ticksSinceLastAnimation >= 150 then
-		-- 	print("Picking random action...")
-		-- 	local randomActionArray = actionArrays[math.random(1, #actionArrays)]
-		-- 	for i, action in ipairs(randomActionArray) do
-		-- 		action:reset()
-		-- 		table.insert(actionQueue, action)
-		-- 	end
-		-- end
+		ticksSinceLastAnimation += 1
+		if ticksSinceLastAnimation >= 150 then
+			print("Picking random action...")
+			local randomActionArray = actionArrays[math.random(1, #actionArrays)]
+			for i, action in ipairs(randomActionArray) do
+				action:reset()
+				table.insert(actionQueue, action)
+			end
+		end
 	end
 
 	if not playdate.isCrankDocked() then
