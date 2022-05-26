@@ -76,6 +76,12 @@ end
 
 -- animation helpers
 
+function spinWithDelay(params)
+	local params = params or {degrees=180, delay=10}
+	local current_pattern = getCurrentDisplayAsPattern()
+	printTable(getCurrentDisplayAsPattern())
+end
+
 function displayTime()
 	local current_time = playdate.getTime()
 
@@ -125,6 +131,21 @@ function displayRandomPattern()
 	displayPattern(createRandomPattern())
 end
 
+function getCurrentDisplayAsPattern()
+	local pattern = {}
+	for n, cluster in ipairs(groups) do
+		local group = {}
+		for i, clock in ipairs(cluster) do
+			group[i] = {
+				clock.hourClockHand.current_degrees,
+				clock.minuteClockHand.current_degrees
+			}
+		end
+		pattern[n] = group
+	end
+	return pattern
+end
+
 -- lifecycle
 
 function updateClock()
@@ -151,7 +172,11 @@ end
 
 local actionQueue = {
 	Action.sequence({
-		{func=displayTime}
+		{func=displayRandomPattern},
+	}),
+	Action.wait(5),
+	Action.sequence({
+		{func=spinWithDelay}
 	})
 }
 
@@ -224,15 +249,15 @@ function playdate.update()
 			end
 		end
 	else
-		ticksSinceLastAnimation += 1
-		if ticksSinceLastAnimation >= 150 then
-			print("Picking random action...")
-			local randomActionArray = actionArrays[math.random(1, #actionArrays)]
-			for i, action in ipairs(randomActionArray) do
-				action:reset()
-				table.insert(actionQueue, action)
-			end
-		end
+		-- ticksSinceLastAnimation += 1
+		-- if ticksSinceLastAnimation >= 150 then
+		-- 	print("Picking random action...")
+		-- 	local randomActionArray = actionArrays[math.random(1, #actionArrays)]
+		-- 	for i, action in ipairs(randomActionArray) do
+		-- 		action:reset()
+		-- 		table.insert(actionQueue, action)
+		-- 	end
+		-- end
 	end
 
 	if not playdate.isCrankDocked() then

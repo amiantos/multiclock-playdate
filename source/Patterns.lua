@@ -1,7 +1,7 @@
 function createRandomPattern()
 	local pattern = {}
 	for n=1,4,1 do
-		group = {}
+		local group = {}
 		for i=1,6,1 do
 			group[i] = {
 				math.random(0, 359),
