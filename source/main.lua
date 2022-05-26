@@ -7,196 +7,21 @@ import "CoreLibs/crank"
 import "Clock.lua"
 import "ClockHand.lua"
 import "Action.lua"
+import "Patterns.lua"
 
 local gfx <const> = playdate.graphics
 
--- settings
+-- object storage
 
-local MilitaryTimeEnabled = false
+local clocks = {}
+
+local groups = {{},{},{},{}}
 
 -- timers
 
 local mainTimer = nil
 
--- patterns
-
-local numberPatterns = {
-	[0] = {
-		{90, 180},
-		{270, 180},
-		{180, 0},
-		{180, 0},
-		{90, 0},
-		{270, 0}
-	},
-	[1] = {
-		{225, 225},
-		{180, 180},
-		{225, 225},
-		{180, 0},
-		{225, 225},
-		{0, 0}
-	},
-	[2] = {
-		{90, 90},
-		{270, 180},
-		{180, 90},
-		{270, 0},
-		{0, 90},
-		{270, 270}
-	},
-	[3] = {
-		{90, 90},
-		{270, 180},
-		{90, 90},
-		{0, 270},
-		{90, 90},
-		{270, 0}
-	},
-	[4] = {
-		{180, 180},
-		{180, 180},
-		{0, 90},
-		{0, 180},
-		{225, 225},
-		{0, 0}
-	},
-	[5] = {
-		{180, 90},
-		{270, 270},
-		{0, 90},
-		{270, 180},
-		{90, 90},
-		{270, 0}
-	},
-	[6] = {
-		{180, 90},
-		{270, 270},
-		{0, 180},
-		{270, 180},
-		{0, 90},
-		{0, 270}
-	},
-	[7] = {
-		{90, 90},
-		{270, 180},
-		{225, 225},
-		{180, 0},
-		{225, 225},
-		{0, 0}
-	},
-	[8] = {
-		{90, 180},
-		{270, 180},
-		{90, 0},
-		{270, 0},
-		{0, 90},
-		{270, 0}
-	},
-	[9] = {
-		{90, 180},
-		{270, 180},
-		{90, 0},
-		{0, 180},
-		{90, 90},
-		{270, 0}
-	}
-
-}
-
-local inwardPointPattern = {
-	[1] = {
-		{105, 105}, {115, 115},
-		{90, 90}, {90, 90},
-		{75, 75}, {65, 65},
-	},
-	[2] = {
-		{125, 125}, {150, 150},
-		{90, 90}, {90, 90},
-		{55, 55}, {30, 30},
-	},
-	[3] = {
-		{210, 210}, {235, 235},
-		{270, 270}, {270, 270},
-		{330, 330}, {305, 305},
-	},
-	[4] = {
-		{245, 245}, {255, 255},
-		{270, 270}, {270, 270},
-		{295, 295}, {285, 285},
-	},
-}
-
-local halfDownHalfUp = {
-	[1] = {
-		{180, 180}, {180, 180},
-		{180, 180}, {180, 180},
-		{180, 180}, {180, 180},
-	},
-	[2] = {
-		{180, 180}, {180, 180},
-		{180, 180}, {180, 180},
-		{180, 180}, {180, 180},
-	},
-	[3] = {
-		{0, 0}, {0, 0},
-		{0, 0}, {0, 0},
-		{0, 0}, {0, 0},
-	},
-	[4] = {
-		{0, 0}, {0, 0},
-		{0, 0}, {0, 0},
-		{0, 0}, {0, 0},
-	},
-}
-
-local horizontalLinesPattern = {
-	[1] = {
-		{90, 90}, {270, 90},
-		{90, 90}, {270, 90},
-		{90, 90}, {270, 90},
-	},
-	[2] = {
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-	},
-	[3] = {
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-	},
-	[4] = {
-		{270, 90}, {270, 270},
-		{270, 90}, {270, 270},
-		{270, 90}, {270, 270},
-	},
-}
-
-local boxPattern = {
-	[1] = {
-		{90, 180}, {270, 90},
-		{0, 180}, {90, 90},
-		{0, 90}, {270, 90},
-	},
-	[2] = {
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-	},
-	[3] = {
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-		{270, 90}, {270, 90},
-	},
-	[4] = {
-		{270, 90}, {270, 180},
-		{270, 270}, {0, 180},
-		{270, 90}, {0, 270},
-	},
-}
-
--- objects
+-- themes
 
 local themes = {
 	default = {
@@ -213,16 +38,45 @@ local themes = {
 	}
 }
 
+-- settings
+
+local MilitaryTimeEnabled = false
+
 local current_theme = themes.defaultReversed
 
-local clocks = {}
+-- core animation functions
 
-local groups = {{},{},{},{}}
+function displayPattern(pattern)
+	for index, pattern in ipairs(pattern) do
+		local clock_group = groups[index]
+		for i=1,6,1 do
+			local positions = pattern[i]
+			local clock = clock_group[i]
+			clock:addDestinations(positions[1], positions[2])
+		end
+	end
+end
 
+function spinClocks(degrees)
+	for i, clock in ipairs(clocks) do
+		for n, hand in ipairs({clock.hourClockHand, clock.minuteClockHand}) do
+			local move_degrees = degrees
+			while move_degrees >= 360 do
+				local next_degrees = hand:getNextDegrees()
+				move_degrees -= 180
+				next_degrees += 180
+				hand:addDestination(next_degrees)
+			end
+			local next_degrees = hand:getNextDegrees()
+			next_degrees += move_degrees
+			hand:addDestination(next_degrees)
+		end
+	end
+end
 
--- animations
+-- animation helpers
 
-function setTime()
+function displayTime()
 	local current_time = playdate.getTime()
 
 	-- get hour
@@ -267,58 +121,14 @@ function setTime()
 	})
 end
 
-function displayPattern(pattern)
-	-- apply patterns
-	for index, pattern in ipairs(pattern) do
-		local clock_group = groups[index]
-		for i=1,6,1 do
-			local positions = pattern[i]
-			local clock = clock_group[i]
-			clock:addDestinations(positions[1], positions[2])
-		end
-	end
-end
-
-function spinClocks(degrees)
-	for i, clock in ipairs(clocks) do
-		for n, hand in ipairs({clock.hourClockHand, clock.minuteClockHand}) do
-			local move_degrees = degrees
-			while move_degrees >= 360 do
-				local next_degrees = hand:getNextDegrees()
-				move_degrees -= 180
-				next_degrees += 180
-				hand:addDestination(next_degrees)
-			end
-			local next_degrees = hand:getNextDegrees()
-			next_degrees += move_degrees
-			hand:addDestination(next_degrees)
-		end
-	end
-end
-
 function displayRandomPattern()
 	displayPattern(createRandomPattern())
-end
-
-function createRandomPattern()
-	local pattern = {}
-	for n=1,4,1 do
-		group = {}
-		for i=1,6,1 do
-			group[i] = {
-				math.random(0, 359),
-				math.random(0,359)
-			}
-		end
-		pattern[n] = group
-	end
-	return pattern
 end
 
 -- lifecycle
 
 function updateClock()
-	setTime()
+	displayTime()
 	mainTimer = playdate.timer.performAfterDelay(3000, updateClock)
 end
 
@@ -333,6 +143,128 @@ function animationComplete()
 		animationsCompleted = 0
 		ticksSinceLastAnimation = 0
 	end
+end
+
+
+-- action stuff
+
+
+local actionQueue = {
+	Action.sequence({
+		{func=displayTime}
+	})
+}
+
+local actionArrays = {
+	{
+		Action.sequence({
+			{func=displayTime},
+			{func=spinClocks, attribute=180}
+		}),
+		Action.wait(5),
+		Action.sequence({
+			{func=displayTime}
+		})
+	},
+	{
+		Action.sequence({
+			{func=spinClocks, attribute=90},
+			{func=displayPattern, attribute=boxPattern},
+			{func=spinClocks, attribute=90}
+		}),
+		Action.wait(5),
+		Action.sequence({
+			{func=displayPattern, attribute=boxPattern}
+		})
+
+	},
+	{
+		Action.sequence({
+			{func=displayPattern, attribute=inwardPointPattern},
+		}),
+		Action.wait(5),
+		Action.sequence({
+			{func=spinClocks, attribute=720}
+		}),
+		Action.sequence({
+			{func=displayPattern, attribute=halfDownHalfUp},
+		}),
+	},
+	{
+		Action.sequence({
+			{func=displayPattern, attribute=horizontalLinesPattern},
+		})
+	},
+	{
+		Action.sequence({
+			{func=displayRandomPattern},
+		})
+	}
+}
+
+-- local displayTimeAnimationCombinations = {
+-- 	{
+-- 		{func=displayTime},
+-- 		{func=spinClocks, attribute=180}
+-- 	}
+-- }
+
+
+-- update
+
+function playdate.update()
+
+	if #actionQueue > 0 then
+		local currentAction = actionQueue[1]
+		currentAction:update()
+		if currentAction.finished == true then
+			table.remove(actionQueue, 1)
+			if #actionQueue == 0 then
+				print("All actions exhausted...")
+			end
+		end
+	else
+		ticksSinceLastAnimation += 1
+		if ticksSinceLastAnimation >= 150 then
+			print("Picking random action...")
+			local randomActionArray = actionArrays[math.random(1, #actionArrays)]
+			for i, action in ipairs(randomActionArray) do
+				action:reset()
+				table.insert(actionQueue, action)
+			end
+		end
+	end
+
+	if not playdate.isCrankDocked() then
+		local ticks = playdate.getCrankTicks(#defaultHourHandImageTable)
+		if  ticks ~= 0 then
+			for index, clock in ipairs(clocks) do
+				clock:advanceFrames(ticks)
+			end
+		end
+	end
+
+	if playdate.buttonJustPressed( playdate.kButtonUp ) then
+		for index, clock in ipairs(clocks) do
+			clock:addDestinations(math.random(0, 359), math.random(0, 359))
+		end
+	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
+		displayPattern(boxPattern)
+	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
+		displayPattern(inwardPointPattern)
+	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
+		for index, clock in ipairs(clocks) do
+			clock:addDestinations(0, 0)
+		end
+	elseif playdate.buttonJustPressed(playdate.kButtonA) then
+		displayTime()
+	elseif playdate.buttonJustPressed(playdate.kButtonB) then
+		spinClocks(180)
+	end
+
+	gfx.sprite.update()
+	playdate.timer.updateTimers()
+
 end
 
 -- setup
@@ -392,121 +324,3 @@ function setup()
 end
 
 setup()
-
--- update
-
-
-local actionQueue = {
-	Action.sequence({
-		{func=setTime}
-	})
-}
-
-local actionArrays = {
-	{
-		Action.sequence({
-			{func=setTime},
-			{func=spinClocks, attribute=180}
-		}),
-		Action.wait(5),
-		Action.sequence({
-			{func=setTime}
-		})
-	},
-	{
-		Action.sequence({
-			{func=spinClocks, attribute=90},
-			{func=displayPattern, attribute=boxPattern},
-			{func=spinClocks, attribute=90}
-		}),
-		Action.wait(5),
-		Action.sequence({
-			{func=displayPattern, attribute=boxPattern}
-		})
-
-	},
-	{
-		Action.sequence({
-			{func=displayPattern, attribute=inwardPointPattern},
-		}),
-		Action.wait(5),
-		Action.sequence({
-			{func=spinClocks, attribute=720}
-		}),
-		Action.sequence({
-			{func=displayPattern, attribute=halfDownHalfUp},
-		}),
-	},
-	{
-		Action.sequence({
-			{func=displayPattern, attribute=horizontalLinesPattern},
-		})
-	},
-	{
-		Action.sequence({
-			{func=displayRandomPattern},
-		})
-	}
-}
-
--- local setTimeAnimationCombinations = {
--- 	{
--- 		{func=setTime},
--- 		{func=spinClocks, attribute=180}
--- 	}
--- }
-
-function playdate.update()
-
-	if #actionQueue > 0 then
-		local currentAction = actionQueue[1]
-		currentAction:update()
-		if currentAction.finished == true then
-			table.remove(actionQueue, 1)
-			if #actionQueue == 0 then
-				print("All actions exhausted...")
-			end
-		end
-	else
-		ticksSinceLastAnimation += 1
-		if ticksSinceLastAnimation >= 150 then
-			print("Picking random action...")
-			local randomActionArray = actionArrays[math.random(1, #actionArrays)]
-			for i, action in ipairs(randomActionArray) do
-				action:reset()
-				table.insert(actionQueue, action)
-			end
-		end
-	end
-
-	if not playdate.isCrankDocked() then
-		local ticks = playdate.getCrankTicks(#defaultHourHandImageTable)
-		if  ticks ~= 0 then
-			for index, clock in ipairs(clocks) do
-				clock:advanceFrames(ticks)
-			end
-		end
-	end
-
-	if playdate.buttonJustPressed( playdate.kButtonUp ) then
-		for index, clock in ipairs(clocks) do
-			clock:addDestinations(math.random(0, 359), math.random(0, 359))
-		end
-	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
-		displayPattern(boxPattern)
-	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
-		displayPattern(inwardPointPattern)
-	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
-		for index, clock in ipairs(clocks) do
-			clock:addDestinations(0, 0)
-		end
-	elseif playdate.buttonJustPressed(playdate.kButtonA) then
-		setTime()
-	elseif playdate.buttonJustPressed(playdate.kButtonB) then
-		spinClocks(180)
-	end
-
-	gfx.sprite.update()
-	playdate.timer.updateTimers()
-
-end
