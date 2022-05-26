@@ -6,6 +6,7 @@ import "CoreLibs/crank"
 
 import "Clock.lua"
 import "ClockHand.lua"
+import "Animation.lua"
 
 local gfx <const> = playdate.graphics
 
@@ -208,6 +209,7 @@ local clocks = {}
 
 local groups = {{},{},{},{}}
 
+
 -- animations
 
 function setTime()
@@ -366,7 +368,32 @@ setup()
 
 -- update
 
+
+local animationQueue = {
+	Animation.new({
+		{func=spinClocks, attribute=180},
+		{func=displayPattern, attribute=boxPattern}
+	}),
+	Animation.wait(5),
+	Animation.new({
+		{func=setTime},
+		{func=spinClocks, attribute=180}
+	}),
+	Animation.wait(5),
+	Animation.new({
+		{func=setTime}
+	})
+}
+
 function playdate.update()
+
+	if #animationQueue > 0 then
+		local currentAnimation = animationQueue[1]
+		currentAnimation:update()
+		if currentAnimation.fired == true then
+			table.remove(animationQueue, 1)
+		end
+	end
 
 	if not playdate.isCrankDocked() then
 		local ticks = playdate.getCrankTicks(#defaultHourHandImageTable)
@@ -392,7 +419,7 @@ function playdate.update()
 	elseif playdate.buttonJustPressed(playdate.kButtonA) then
 		setTime()
 	elseif playdate.buttonJustPressed(playdate.kButtonB) then
-		spinClocks(90)
+		spinClocks(180)
 	end
 
 	gfx.sprite.update()
