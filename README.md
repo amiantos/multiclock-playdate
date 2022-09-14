@@ -1,10 +1,14 @@
 # MultiClock for Playdate
 
-MultiClock is an app for Playdate that displays the current time using 24 clocks.
+MultiClock is a splash of code for Playdate that displays the current time using 24 clocks. It's essentially a rough Playdate version of the [MultiClock screensaver for macOS](https://github.com/amiantos/multiclock).
 
 ## Screenshots
 
+TODO
+
 ## Download
+
+TODO
 
 ## Authors
 
