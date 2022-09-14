@@ -26,7 +26,6 @@ function ClockHand:init(imagetable, animationCallback)
 	self:setImage(self.imagetable[1])
 
 	self:add()
-
 end
 
 function ClockHand:changeImagetable(imagetable)
@@ -77,7 +76,7 @@ function ClockHand:update()
 	ClockHand.super.update()
 
 	self.tick += 1
-	if #self.destination_degrees > 0 then
+	if #self.destination_degrees > 0 and self.tick % 2 == 0 then
 		local destination_degrees = self.destination_degrees[1]
 		local destination_frame = self:convertDegreesToFrames(destination_degrees)
 		if self.current_frame ~= destination_frame then
