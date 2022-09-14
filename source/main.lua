@@ -296,7 +296,9 @@ function setup()
 	local menu = playdate.getSystemMenu()
 	local timeFormatMenu, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
 		MilitaryTimeEnabled = value
-		displayTime()
+		table.insert(actionQueue, Action.sequence({
+			{func=displayTime},
+		}))
 	end)
 
 	-- create clocks
