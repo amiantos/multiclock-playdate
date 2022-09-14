@@ -235,30 +235,30 @@ local actionArrays = {
 
 function playdate.update()
 
-	if #actionQueue > 0 then
-		local currentAction = actionQueue[1]
-		currentAction:update()
-		if currentAction.finished == true then
-			table.remove(actionQueue, 1)
-			if #actionQueue == 0 then
-				print("All actions exhausted...")
+	if playdate.isCrankDocked() then
+		if #actionQueue > 0 then
+			local currentAction = actionQueue[1]
+			currentAction:update()
+			if currentAction.finished == true then
+				table.remove(actionQueue, 1)
+				if #actionQueue == 0 then
+					print("All actions exhausted...")
+				end
+			end
+		else
+			ticksSinceLastAnimation += 1
+			if ticksSinceLastAnimation >= 150 then
+				print("Picking random action...")
+				local randomActionArray = actionArrays[math.random(1, #actionArrays)]
+				for i, action in ipairs(randomActionArray) do
+					action:reset()
+					table.insert(actionQueue, action)
+				end
 			end
 		end
 	else
-		ticksSinceLastAnimation += 1
-		if ticksSinceLastAnimation >= 150 then
-			print("Picking random action...")
-			local randomActionArray = actionArrays[math.random(1, #actionArrays)]
-			for i, action in ipairs(randomActionArray) do
-				action:reset()
-				table.insert(actionQueue, action)
-			end
-		end
-	end
-
-	if not playdate.isCrankDocked() then
-		local ticks = playdate.getCrankTicks(#defaultHourHandImageTable)
-		if  ticks ~= 0 then
+		local ticks = playdate.getCrankTicks(360)
+		if  ticks > 0 then
 			for index, clock in ipairs(clocks) do
 				clock:advanceFrames(ticks)
 			end
@@ -294,8 +294,9 @@ function setup()
 
 	-- add menu options
 	local menu = playdate.getSystemMenu()
-	local checkmarkMenuItem, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
+	local timeFormatMenu, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
 		MilitaryTimeEnabled = value
+		displayTime()
 	end)
 
 	-- create clocks

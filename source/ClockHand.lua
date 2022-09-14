@@ -59,20 +59,13 @@ function ClockHand:addDestination(destination_degrees)
 end
 
 function ClockHand:advance(frames)
-	print("Not implemented")
-	-- TODO: Reimplement if needed?
-	-- if #self.destination_frames == 0 then
-	-- 	if frames < 0 then
-	-- 		self.clockwise = false
-	-- 	end
-	-- 	local destination_frame = self.current_frame + frames
-	-- 	if destination_frame > #self.imagetable then
-	-- 		destination_frame = destination_frame - #self.imagetable
-	-- 	elseif destination_frame < 1 then
-	-- 		destination_frame = destination_frame + #self.imagetable
-	-- 	end
-	-- 	table.insert(self.destination_frames, 1, destination_frame)
-	-- end
+	print(frames)
+
+	if #self.destination_degrees > 0 then
+		self:addDestination(self.destination_degrees[#self.destination_degrees] + frames)
+	else
+		self:addDestination(self.current_degrees + frames)
+	end
 end
 
 function ClockHand:update()
@@ -83,11 +76,13 @@ function ClockHand:update()
 		local destination_degrees = self.destination_degrees[1]
 		local destination_frame = self:convertDegreesToFrames(destination_degrees)
 		if self.current_frame ~= destination_frame then
+			-- it would be cool if destination degrees could have direction baked into them
 			if self.clockwise then
 				self.current_frame += 1
 			else
 				self.current_frame -= 1
 			end
+
 			if self.current_frame > #self.imagetable then
 				self.current_frame = 1
 			elseif self.current_frame < 1 then
