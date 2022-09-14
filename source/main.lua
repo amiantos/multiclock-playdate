@@ -43,6 +43,7 @@ local themes = {
 local MilitaryTimeEnabled = false
 
 local current_theme = themes.default
+local current_theme_string = "default"
 
 -- core animation functions
 
@@ -166,6 +167,35 @@ function animationComplete()
 	end
 end
 
+function changeTheme(theme_string)
+	if theme_string ~= current_theme_string then
+		current_theme_string = theme_string
+		if current_theme_string == "default" then
+			current_theme = themes.default
+		else
+			current_theme = themes.defaultReversed
+		end
+		setBackground()
+		setClockTheme()
+		print("Changed theme to", current_theme_string)
+	end
+end
+
+function setBackground()
+	gfx.sprite.setBackgroundDrawingCallback(
+		function( x, y, width, height )
+			gfx.setClipRect( x, y, width, height ) -- let's only draw the part of the screen that's dirty
+			current_theme.background:draw( 0, 0 )
+			gfx.clearClipRect() -- clear so we don't interfere with drawing that comes after this
+		end
+	)
+end
+
+function setClockTheme()
+	for i, clock in ipairs(clocks) do
+		clock:setTheme(current_theme)
+	end
+end
 
 -- action stuff
 
@@ -301,6 +331,16 @@ function setup()
 		}))
 	end)
 
+	local themeOptionMenu, error = menu:addOptionsMenuItem(
+		"theme",
+		{"default", "reversed"},
+		"default",
+		function(value)
+			changeTheme(value)
+		end
+	)
+
+
 	-- create clocks
 	for n=0,2,1 do
 		for i=0,7,1 do
@@ -335,13 +375,7 @@ function setup()
 
 	-- set background
 
-	gfx.sprite.setBackgroundDrawingCallback(
-		function( x, y, width, height )
-			gfx.setClipRect( x, y, width, height ) -- let's only draw the part of the screen that's dirty
-			current_theme.background:draw( 0, 0 )
-			gfx.clearClipRect() -- clear so we don't interfere with drawing that comes after this
-		end
-	)
+	setBackground()
 
 	-- updateClock()
 

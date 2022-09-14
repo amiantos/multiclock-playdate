@@ -14,6 +14,12 @@ function Clock:init(face, hourClockHand, minuteClockHand)
 	self.minuteClockHand = minuteClockHand
 end
 
+function Clock:setTheme(theme)
+	self.face:setImage(theme.face)
+	self.hourClockHand:changeImagetable(theme.hourHand)
+	self.minuteClockHand:changeImagetable(theme.minuteHand)
+end
+
 -- move hands
 
 function Clock:advanceFrames(frames)

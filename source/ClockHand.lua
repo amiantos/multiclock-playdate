@@ -29,6 +29,11 @@ function ClockHand:init(imagetable, animationCallback)
 
 end
 
+function ClockHand:changeImagetable(imagetable)
+	self.imagetable = imagetable
+	self:setImage(self.imagetable:getImage(self.current_frame))
+end
+
 function ClockHand:getNextDegrees()
 	local current_degrees = 0
 	if #self.destination_degrees == 0 then
