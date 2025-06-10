@@ -31,3 +31,7 @@ function Clock:addDestinations(hourHandDestination, minuteHandDestination)
 	self.hourClockHand:addDestination(hourHandDestination)
 	self.minuteClockHand:addDestination(minuteHandDestination)
 end
+
+function Clock:isMoving()
+	return self.hourClockHand:isMoving() or self.minuteClockHand:isMoving()
+end

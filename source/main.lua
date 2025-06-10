@@ -154,17 +154,20 @@ function updateClock()
 	mainTimer = playdate.timer.performAfterDelay(3000, updateClock)
 end
 
-local animationsCompleted = 0
 local ticksSinceLastAnimation = 0
 local isAnimating = false
 
 function animationComplete()
-	animationsCompleted += 1
-	if animationsCompleted == 48 then
-		print("All hands have stopped moving...")
-		animationsCompleted = 0
-		ticksSinceLastAnimation = 0
+	-- Legacy callback - no longer used
+end
+
+function anyClockMoving()
+	for i, clock in ipairs(clocks) do
+		if clock:isMoving() then
+			return true
+		end
 	end
+	return false
 end
 
 function changeTheme(theme_string)
@@ -273,18 +276,26 @@ function playdate.update()
 				table.remove(actionQueue, 1)
 				if #actionQueue == 0 then
 					print("All actions exhausted...")
+					isAnimating = anyClockMoving()
 				end
 			end
 		else
-			ticksSinceLastAnimation += 1
-			if ticksSinceLastAnimation >= 150 then
-				print("Picking random action...")
-				local randomActionArray = actionArrays[math.random(1, #actionArrays)]
-				for i, action in ipairs(randomActionArray) do
-					action:reset()
-					table.insert(actionQueue, action)
+			if isAnimating then
+				isAnimating = anyClockMoving()
+				if not isAnimating then
+					print("All hands have stopped moving...")
+					ticksSinceLastAnimation = 0
 				end
-				ticksSinceLastAnimation = 0
+			else
+				ticksSinceLastAnimation += 1
+				if ticksSinceLastAnimation >= 150 then
+					print("Picking random action...")
+					local randomActionArray = actionArrays[math.random(1, #actionArrays)]
+					for i, action in ipairs(randomActionArray) do
+						action:reset()
+						table.insert(actionQueue, action)
+					end
+				end
 			end
 		end
 	else
@@ -300,18 +311,24 @@ function playdate.update()
 		for index, clock in ipairs(clocks) do
 			clock:addDestinations(math.random(0, 359), math.random(0, 359))
 		end
+		isAnimating = true
 	elseif playdate.buttonJustPressed(playdate.kButtonDown) then
 		displayPattern(boxPattern)
+		isAnimating = true
 	elseif playdate.buttonJustPressed(playdate.kButtonLeft) then
 		displayPattern(inwardPointPattern)
+		isAnimating = true
 	elseif playdate.buttonJustPressed(playdate.kButtonRight) then
 		for index, clock in ipairs(clocks) do
 			clock:addDestinations(0, 0)
 		end
+		isAnimating = true
 	elseif playdate.buttonJustPressed(playdate.kButtonA) then
 		displayTime()
+		isAnimating = true
 	elseif playdate.buttonJustPressed(playdate.kButtonB) then
 		spinClocks(180)
+		isAnimating = true
 	end
 
 	gfx.sprite.update()

@@ -72,6 +72,10 @@ function ClockHand:advance(frames)
 	end
 end
 
+function ClockHand:isMoving()
+	return #self.destination_degrees > 0
+end
+
 function ClockHand:update()
 	ClockHand.super.update()
 
