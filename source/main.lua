@@ -284,6 +284,7 @@ function playdate.update()
 					action:reset()
 					table.insert(actionQueue, action)
 				end
+				ticksSinceLastAnimation = 0
 			end
 		end
 	else
