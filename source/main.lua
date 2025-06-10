@@ -343,10 +343,10 @@ function playdate.gameWillPause()
 	gfx.pushContext(pauseImage)
 	gfx.setColor(gfx.kColorBlack)
 	gfx.setFont(gfx.getSystemFont(gfx.font.kVariantBold))
-	gfx.drawTextAligned("MultiClock", 100, 20, kTextAlignment.center)
-	
+	gfx.drawTextAligned("MultiClock", 100, 30, kTextAlignment.center)
 	gfx.setFont(gfx.getSystemFont(gfx.font.kVariantNormal))
-	gfx.drawTextAligned("Controls:", 100, 60, kTextAlignment.center)
+	gfx.drawTextAligned("by Brad Root", 100, 48, kTextAlignment.center)
+	
 	gfx.drawText("Ⓐ: Show time", 10, 90)
 	gfx.drawText("Ⓑ: Spin clocks", 10, 110)
 	gfx.drawText("⬆: Random", 10, 130)
