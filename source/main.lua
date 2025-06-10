@@ -320,6 +320,27 @@ end
 
 -- setup
 
+function playdate.gameWillPause()
+	local pauseImage = gfx.image.new(400, 240, gfx.kColorWhite)
+	gfx.pushContext(pauseImage)
+	gfx.setColor(gfx.kColorBlack)
+	gfx.setFont(gfx.getSystemFont(gfx.font.kVariantBold))
+	gfx.drawTextAligned("MultiClock", 100, 20, kTextAlignment.center)
+	
+	gfx.setFont(gfx.getSystemFont(gfx.font.kVariantNormal))
+	gfx.drawTextAligned("Controls:", 100, 60, kTextAlignment.center)
+	gfx.drawText("Ⓐ: Show time", 10, 90)
+	gfx.drawText("Ⓑ: Spin clocks", 10, 110)
+	gfx.drawText("⬆: Random", 10, 130)
+	gfx.drawText("⬇: Box pattern", 10, 150)
+	gfx.drawText("⬅: Points", 10, 170)
+	gfx.drawText("➡: Reset", 10, 190)
+	gfx.drawText("Crank: Manual", 10, 210)
+	
+	gfx.popContext()
+	playdate.setMenuImage(pauseImage)
+end
+
 function setup()
 
 	-- add menu options
