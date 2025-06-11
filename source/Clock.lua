@@ -32,6 +32,11 @@ function Clock:addDestinations(hourHandDestination, minuteHandDestination)
 	self.minuteClockHand:addDestination(minuteHandDestination)
 end
 
+function Clock:setDirectPositions(hourHandDegrees, minuteHandDegrees)
+	self.hourClockHand:setDirectPosition(hourHandDegrees)
+	self.minuteClockHand:setDirectPosition(minuteHandDegrees)
+end
+
 function Clock:isMoving()
 	return self.hourClockHand:isMoving() or self.minuteClockHand:isMoving()
 end

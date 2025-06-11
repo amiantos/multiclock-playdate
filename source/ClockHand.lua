@@ -62,6 +62,24 @@ function ClockHand:addDestination(destination_degrees)
 	table.insert(self.destination_degrees, destination_degrees)
 end
 
+function ClockHand:setDirectPosition(degrees)
+	-- Clear any pending animations for direct control
+	self.destination_degrees = {}
+	
+	-- Normalize degrees to 0-359
+	while degrees < 0 do
+		degrees += 360
+	end
+	while degrees >= 360 do
+		degrees -= 360
+	end
+	
+	-- Set position directly
+	self.current_degrees = degrees
+	self.current_frame = self:convertDegreesToFrames(degrees)
+	self:setImage(self.imagetable:getImage(self.current_frame))
+end
+
 function ClockHand:advance(frames)
 	print(frames)
 

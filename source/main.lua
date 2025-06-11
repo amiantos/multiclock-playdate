@@ -21,6 +21,12 @@ local groups = {{},{},{},{}}
 
 local mainTimer = nil
 
+-- crank control state
+
+local crankWasDocked = true
+local crankBaselineAngle = 0
+local clockBaselinePositions = {}
+
 -- themes
 
 local themes = {
@@ -299,12 +305,48 @@ function playdate.update()
 			end
 		end
 	else
-		local ticks = playdate.getCrankTicks(360)
-		if  ticks > 0 then
+		-- Check if crank was just undocked
+		if crankWasDocked then
+			crankWasDocked = false
+			crankBaselineAngle = playdate.getCrankPosition()
+			
+			-- Store current positions of all clock hands
+			clockBaselinePositions = {}
 			for index, clock in ipairs(clocks) do
-				clock:advanceFrames(ticks)
+				clockBaselinePositions[index] = {
+					hour = clock.hourClockHand.current_degrees,
+					minute = clock.minuteClockHand.current_degrees
+				}
 			end
 		end
+		
+		-- Apply relative movement using cumulative approach
+		local current_crank_angle = playdate.getCrankPosition()
+		local crank_delta = current_crank_angle - crankBaselineAngle
+		
+		-- Handle wraparound (crossing 0/360 boundary)
+		if crank_delta > 180 then
+			crank_delta = crank_delta - 360
+		elseif crank_delta < -180 then
+			crank_delta = crank_delta + 360
+		end
+		
+		-- Update baseline positions with the delta (accumulate movement)
+		for index, clock in ipairs(clocks) do
+			local baseline = clockBaselinePositions[index]
+			baseline.hour = baseline.hour + (crank_delta / 12)
+			baseline.minute = baseline.minute + crank_delta
+			
+			clock:setDirectPositions(baseline.hour, baseline.minute)
+		end
+		
+		-- Update baseline angle for next frame
+		crankBaselineAngle = current_crank_angle
+	end
+	
+	-- Track crank docked state for next frame
+	if playdate.isCrankDocked() then
+		crankWasDocked = true
 	end
 
 	if playdate.buttonJustPressed( playdate.kButtonUp ) then
