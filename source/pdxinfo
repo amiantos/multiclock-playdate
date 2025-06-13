@@ -4,3 +4,4 @@ description=Clock differently.
 bundleID=net.amiantos.multiclock.playdate
 version=1.0
 buildNumber=666
+imagePath=cover-image

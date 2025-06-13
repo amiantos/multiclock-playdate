@@ -288,7 +288,7 @@ local actionArrays = {
 		Action.sequence({
 			{func=displayRandomPattern},
 		}),
-	}
+	},
 	{
 		Action.sequence({
 			{func=displayRandomPattern},
