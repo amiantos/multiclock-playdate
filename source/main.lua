@@ -254,7 +254,6 @@ local actionArrays = {
 		Action.sequence({
 			{func=displayTime}
 		}),
-		Action.wait(10),
 	},
 	{
 		Action.sequence({
@@ -289,12 +288,14 @@ local actionArrays = {
 		Action.sequence({
 			{func=displayRandomPattern},
 		}),
-		Action.sequence({
-			{func=displayTime},
-		}),
+	}
+	{
 		Action.sequence({
 			{func=displayRandomPattern},
-		})
+			{func=displayTime},
+			{func=displayRandomPattern},
+			{func=displayTime},
+		}),
 	}
 }
 
