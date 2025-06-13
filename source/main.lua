@@ -51,6 +51,35 @@ local MilitaryTimeEnabled = false
 local current_theme = themes.default
 local current_theme_string = "default"
 
+local pauseDurationSetting = "short"
+local pauseDurations = {
+	short = 150,   -- 5 seconds (current default)
+	medium = 300,  -- 10 seconds
+	long = 600     -- 20 seconds
+}
+
+-- configuration save/load functions
+
+function saveConfiguration()
+	local configData = {
+		militaryTimeEnabled = MilitaryTimeEnabled,
+		themeString = current_theme_string,
+		pauseDuration = pauseDurationSetting
+	}
+	playdate.datastore.write(configData, "multiclock_config")
+end
+
+function loadConfiguration()
+	local configData = playdate.datastore.read("multiclock_config")
+	if configData then
+		MilitaryTimeEnabled = configData.militaryTimeEnabled or false
+		if configData.themeString then
+			changeTheme(configData.themeString)
+		end
+		pauseDurationSetting = configData.pauseDuration or "short"
+	end
+end
+
 -- core animation functions
 
 function displayPattern(pattern)
@@ -224,7 +253,8 @@ local actionArrays = {
 		Action.wait(5),
 		Action.sequence({
 			{func=displayTime}
-		})
+		}),
+		Action.wait(10),
 	},
 	{
 		Action.sequence({
@@ -256,6 +286,12 @@ local actionArrays = {
 		})
 	},
 	{
+		Action.sequence({
+			{func=displayRandomPattern},
+		}),
+		Action.sequence({
+			{func=displayTime},
+		}),
 		Action.sequence({
 			{func=displayRandomPattern},
 		})
@@ -294,7 +330,7 @@ function playdate.update()
 				end
 			else
 				ticksSinceLastAnimation += 1
-				if ticksSinceLastAnimation >= 150 then
+				if ticksSinceLastAnimation >= pauseDurations[pauseDurationSetting] then
 					print("Picking random action...")
 					local randomActionArray = actionArrays[math.random(1, #actionArrays)]
 					for i, action in ipairs(randomActionArray) do
@@ -403,10 +439,14 @@ end
 
 function setup()
 
+	-- load saved configuration
+	loadConfiguration()
+
 	-- add menu options
 	local menu = playdate.getSystemMenu()
 	local timeFormatMenu, error = menu:addCheckmarkMenuItem("24 hour", MilitaryTimeEnabled, function(value)
 		MilitaryTimeEnabled = value
+		saveConfiguration()
 		table.insert(actionQueue, Action.sequence({
 			{func=displayTime},
 		}))
@@ -415,9 +455,20 @@ function setup()
 	local themeOptionMenu, error = menu:addOptionsMenuItem(
 		"theme",
 		{"default", "reversed"},
-		"default",
+		current_theme_string,
 		function(value)
 			changeTheme(value)
+			saveConfiguration()
+		end
+	)
+
+	local pauseOptionMenu, error = menu:addOptionsMenuItem(
+		"pause",
+		{"short", "medium", "long"},
+		pauseDurationSetting,
+		function(value)
+			pauseDurationSetting = value
+			saveConfiguration()
 		end
 	)
 
@@ -460,6 +511,16 @@ function setup()
 
 	-- updateClock()
 
+end
+
+-- lifecycle event handlers for saving configuration
+
+function playdate.gameWillTerminate()
+	saveConfiguration()
+end
+
+function playdate.deviceWillSleep()
+	saveConfiguration()
 end
 
 setup()
